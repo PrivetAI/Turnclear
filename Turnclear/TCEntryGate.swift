@@ -31,6 +31,9 @@ final class TCEntryGate: ObservableObject {
     private var lastProgress = Date()
     private var stallTimer: Timer?
     private var probe: URLSessionTask?
+    /// The session behind `probe`. Kept so the stall watch can invalidate it, which is the only
+    /// way to cancel the probe AND release the watcher it retains.
+    private var session: URLSession?
 
     init(tcSourceLink: String, tcMarkerDomain: String) {
         self.tcSourceLink = tcSourceLink
@@ -55,12 +58,22 @@ final class TCEntryGate: ObservableObject {
         // HEAD, never GET: a default GET pulls down the whole page and the panel then fetches
         // the very same page again from scratch, doubling the launch cost for nothing.
         request.httpMethod = "HEAD"
+        // The one request in the app whose entire value is being LIVE. A 301 or 308 is cacheable
+        // by default with no headers at all, and a cached hop makes the gate answer from a
+        // snapshot instead of from the Worker — invisibly, for as long as the entry lives.
+        request.cachePolicy = .reloadIgnoringLocalCacheData
         request.timeoutInterval = 10
 
         let configuration = URLSessionConfiguration.default
         // No attempt may sit waiting for the radio while the splash is up.
         configuration.waitsForConnectivity = (tcPanelReady != nil)
         configuration.timeoutIntervalForResource = attemptCeiling
+        configuration.urlCache = nil
+        // The gate is a routing probe, not a visit. URLSession's cookie jar is NOT the panel's,
+        // so a tracker cookie stored here is a second click identity the panel never sees and
+        // nothing ever reads back.
+        configuration.httpCookieStorage = nil
+        configuration.httpShouldSetCookies = false
 
         let watcher = TCHopWatcher(markerDomain: tcMarkerDomain, ownHost: tcOwnHost)
         watcher.onProgress = { [weak self] in
@@ -74,7 +87,11 @@ final class TCEntryGate: ObservableObject {
         lastProgress = Date()
         armStallWatch(attempt: number, token: token)
 
+        self.session = session
         probe = session.dataTask(with: request) { [weak self] _, response, error in
+            // A URLSession retains its delegate until invalidated. Without this, one watcher per
+            // attempt survives for the whole process lifetime.
+            session.finishTasksAndInvalidate()
             Task { @MainActor in
                 guard let self = self, !self.settled, self.attemptToken == token else { return }
                 if watcher.sawMarker { self.settle(false); return }
@@ -109,7 +126,7 @@ final class TCEntryGate: ObservableObject {
                 let overCeiling = Date().timeIntervalSince(self.startedAt) > self.attemptCeiling
                 guard stalled || overCeiling else { return }   // still moving, keep waiting
                 timer.invalidate()
-                self.probe?.cancel()
+                self.session?.invalidateAndCancel()   // cancels the probe AND frees the watcher
                 self.attemptFailed(attempt: number, token: token)
             }
         }
