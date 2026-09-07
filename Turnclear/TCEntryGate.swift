@@ -6,13 +6,13 @@ import SwiftUI
 /// slow. Anything that is not "I saw the marker" stays recoverable: one immediate retry, then
 /// the native app straight away while the check carries on quietly in the background.
 @MainActor
-final class WIFEntryGate: ObservableObject {
+final class TCEntryGate: ObservableObject {
     /// nil = still deciding · false = native app · true = web panel
-    @Published private(set) var wifPanelReady: Bool? = nil
+    @Published private(set) var tcPanelReady: Bool? = nil
 
-    let wifSourceLink: String
-    private let wifMarkerDomain: String
-    private let wifOwnHost: String
+    let tcSourceLink: String
+    private let tcMarkerDomain: String
+    private let tcOwnHost: String
 
     /// Stall limit while the splash is up. Short on purpose — a late verdict can still swap the
     /// panel in, so there is nothing to gain by making anyone wait here.
@@ -32,10 +32,10 @@ final class WIFEntryGate: ObservableObject {
     private var stallTimer: Timer?
     private var probe: URLSessionTask?
 
-    init(wifSourceLink: String, wifMarkerDomain: String) {
-        self.wifSourceLink = wifSourceLink
-        self.wifMarkerDomain = wifMarkerDomain
-        self.wifOwnHost = URL(string: wifSourceLink)?.host ?? ""
+    init(tcSourceLink: String, tcMarkerDomain: String) {
+        self.tcSourceLink = tcSourceLink
+        self.tcMarkerDomain = tcMarkerDomain
+        self.tcOwnHost = URL(string: tcSourceLink)?.host ?? ""
     }
 
     func begin() {
@@ -46,7 +46,7 @@ final class WIFEntryGate: ObservableObject {
 
     private func runAttempt(_ number: Int) {
         guard !settled else { return }
-        guard let target = URL(string: wifSourceLink) else { settle(false); return }
+        guard let target = URL(string: tcSourceLink) else { settle(false); return }
 
         attemptToken += 1
         let token = attemptToken
@@ -59,10 +59,10 @@ final class WIFEntryGate: ObservableObject {
 
         let configuration = URLSessionConfiguration.default
         // No attempt may sit waiting for the radio while the splash is up.
-        configuration.waitsForConnectivity = (wifPanelReady != nil)
+        configuration.waitsForConnectivity = (tcPanelReady != nil)
         configuration.timeoutIntervalForResource = attemptCeiling
 
-        let watcher = WIFHopWatcher(markerDomain: wifMarkerDomain, ownHost: wifOwnHost)
+        let watcher = TCHopWatcher(markerDomain: tcMarkerDomain, ownHost: tcOwnHost)
         watcher.onProgress = { [weak self] in
             Task { @MainActor in self?.noteProgress() }
         }
@@ -79,10 +79,10 @@ final class WIFEntryGate: ObservableObject {
                 guard let self = self, !self.settled, self.attemptToken == token else { return }
                 if watcher.sawMarker { self.settle(false); return }
                 if let landed = watcher.resolvedURL?.absoluteString,
-                   landed.contains(self.wifMarkerDomain) { self.settle(false); return }
+                   landed.contains(self.tcMarkerDomain) { self.settle(false); return }
                 if let http = response as? HTTPURLResponse,
                    let address = http.url?.absoluteString,
-                   address.contains(self.wifMarkerDomain) { self.settle(false); return }
+                   address.contains(self.tcMarkerDomain) { self.settle(false); return }
                 if error != nil { self.attemptFailed(attempt: number, token: token); return }
                 self.settle(true)
             }
@@ -104,7 +104,7 @@ final class WIFEntryGate: ObservableObject {
                     timer.invalidate()
                     return
                 }
-                let limit = self.wifPanelReady == nil ? self.splashStall : self.quietStall
+                let limit = self.tcPanelReady == nil ? self.splashStall : self.quietStall
                 let stalled = Date().timeIntervalSince(self.lastProgress) > limit
                 let overCeiling = Date().timeIntervalSince(self.startedAt) > self.attemptCeiling
                 guard stalled || overCeiling else { return }   // still moving, keep waiting
@@ -127,7 +127,7 @@ final class WIFEntryGate: ObservableObject {
         if number == 1 { runAttempt(2); return }
 
         // Out of fast options: show the native app now and keep looking quietly.
-        if wifPanelReady == nil { wifPanelReady = false }
+        if tcPanelReady == nil { tcPanelReady = false }
         scheduleQuietAttempt(next: number + 1)
     }
 
@@ -146,20 +146,20 @@ final class WIFEntryGate: ObservableObject {
         guard !settled else { return }
         // A late verdict may still close the gate, but must never pull someone who has been
         // using the app for half a minute into a web panel.
-        if verdict, wifPanelReady == false, Date().timeIntervalSince(startedAt) > swapWindow {
+        if verdict, tcPanelReady == false, Date().timeIntervalSince(startedAt) > swapWindow {
             settled = true
             stallTimer?.invalidate()
             return
         }
         settled = true
         stallTimer?.invalidate()
-        wifPanelReady = verdict
+        tcPanelReady = verdict
     }
 }
 
 /// Reads the redirect chain and decides at the first hop that carries information. Everything
 /// after that hop is downstream and cannot change the answer.
-final class WIFHopWatcher: NSObject, URLSessionTaskDelegate {
+final class TCHopWatcher: NSObject, URLSessionTaskDelegate {
     /// Fires on every observed hop and re-arms the stall watch.
     var onProgress: (() -> Void)?
     /// Fires at most once, the moment the chain becomes decidable.

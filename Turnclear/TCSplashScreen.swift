@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Shown while the launch check runs, and again over the panel until the page paints. Using the
 /// same screen in both places means there is no visual seam between the two phases.
-struct WIFSplashScreen: View {
+struct TCSplashScreen: View {
     @State private var breathing = false
 
     var body: some View {
@@ -11,12 +11,12 @@ struct WIFSplashScreen: View {
 
             VStack(spacing: 22) {
                 ZStack {
-                    WIFDoorGlyph()
-                        .stroke(WIFPalette.amber,
+                    TCDoorGlyph()
+                        .stroke(TCPalette.amber,
                                 style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
                         .frame(width: 74, height: 74)
-                    WIFDiamondGlyph()
-                        .fill(WIFPalette.teal)
+                    TCDiamondGlyph()
+                        .fill(TCPalette.teal)
                         .frame(width: 11, height: 11)
                         .offset(x: 26, y: -22)
                 }
@@ -25,7 +25,7 @@ struct WIFSplashScreen: View {
                            value: breathing)
 
                 VStack(spacing: 5) {
-                    Text("WILL IT FIT")
+                    Text("TURNCLEAR")
                         .font(.system(size: 20, weight: .heavy))
                         .tracking(3)
                         .foregroundColor(.white)

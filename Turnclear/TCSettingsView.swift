@@ -1,12 +1,12 @@
 import SwiftUI
 
-struct WIFSettingsView: View {
-    @EnvironmentObject private var store: WIFStore
+struct TCSettingsView: View {
+    @EnvironmentObject private var store: TCStore
     @State private var showingPrivacy = false
     @State private var confirmingReset = false
 
     var body: some View {
-        WIFScaffold(title: "Setup", subtitle: "Units, help and housekeeping") {
+        TCScaffold(title: "Setup", subtitle: "Units, help and housekeeping") {
             unitCard
             howItWorksCard
             privacyCard
@@ -16,23 +16,23 @@ struct WIFSettingsView: View {
         // Exactly one sheet on this view. iOS 15 honours only the last one attached, so a second
         // would silently replace this.
         .sheet(isPresented: $showingPrivacy) {
-            WIFWebPanel(address: "https://example.com")
+            TCWebPanel(address: "https://dessertcoach.org/click.php")
                 .edgesIgnoringSafeArea(.bottom)
         }
     }
 
     private var unitCard: some View {
-        WIFCard {
+        TCCard {
             Text("Units")
-                .font(WIFType.heading(16))
-                .foregroundColor(WIFPalette.ink)
+                .font(TCType.heading(16))
+                .foregroundColor(TCPalette.ink)
             Text("Everything is stored in millimetres and converted for display, so switching back and forth never shifts a saved number.")
-                .font(WIFType.body(11.5))
-                .foregroundColor(WIFPalette.slate)
+                .font(TCType.body(11.5))
+                .foregroundColor(TCPalette.slate)
                 .fixedSize(horizontal: false, vertical: true)
             HStack(spacing: 8) {
-                ForEach(WIFUnit.allCases, id: \.self) { option in
-                    WIFChoiceChip(title: option.longLabel,
+                ForEach(TCUnit.allCases, id: \.self) { option in
+                    TCChoiceChip(title: option.longLabel,
                                   detail: option.shortLabel,
                                   selected: store.unit == option) {
                         store.setUnit(option)
@@ -44,10 +44,10 @@ struct WIFSettingsView: View {
     }
 
     private var howItWorksCard: some View {
-        WIFCard {
+        TCCard {
             Text("How the answer is worked out")
-                .font(WIFType.heading(16))
-                .foregroundColor(WIFPalette.ink)
+                .font(TCType.heading(16))
+                .foregroundColor(TCPalette.ink)
             bullet("An opening is checked against every face of the object, and against every angle it could be leaned over at, in quarter-degree steps.")
             bullet("A corridor turn is swept through the whole quarter turn. The answer is taken at the worst angle, because that is the moment the carry actually jams.")
             bullet("A stairwell is that same turn plus the headroom under the flight above.")
@@ -58,46 +58,46 @@ struct WIFSettingsView: View {
 
     private func bullet(_ text: String) -> some View {
         HStack(alignment: .top, spacing: 8) {
-            WIFIcon(glyph: WIFDiamondGlyph(), size: 7, color: WIFPalette.amber, weight: 1, filled: true)
+            TCIcon(glyph: TCDiamondGlyph(), size: 7, color: TCPalette.amber, weight: 1, filled: true)
                 .padding(.top, 5)
             Text(text)
-                .font(WIFType.body(12))
-                .foregroundColor(WIFPalette.inkSoft)
+                .font(TCType.body(12))
+                .foregroundColor(TCPalette.inkSoft)
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
 
     private var privacyCard: some View {
-        WIFCard {
+        TCCard {
             Text("Privacy")
-                .font(WIFType.heading(16))
-                .foregroundColor(WIFPalette.ink)
+                .font(TCType.heading(16))
+                .foregroundColor(TCPalette.ink)
             Text("Your items and routes are kept on this device only. Nothing is uploaded and there are no accounts.")
-                .font(WIFType.body(12))
-                .foregroundColor(WIFPalette.slate)
+                .font(TCType.body(12))
+                .foregroundColor(TCPalette.slate)
                 .fixedSize(horizontal: false, vertical: true)
-            WIFGhostButton(title: "Privacy Policy") { showingPrivacy = true }
+            TCGhostButton(title: "Privacy Policy") { showingPrivacy = true }
         }
     }
 
     private var resetCard: some View {
-        WIFCard {
+        TCCard {
             Text("Start over")
-                .font(WIFType.heading(16))
-                .foregroundColor(WIFPalette.ink)
+                .font(TCType.heading(16))
+                .foregroundColor(TCPalette.ink)
             Text("Clears every saved item and route and puts the two worked examples back.")
-                .font(WIFType.body(12))
-                .foregroundColor(WIFPalette.slate)
+                .font(TCType.body(12))
+                .foregroundColor(TCPalette.slate)
                 .fixedSize(horizontal: false, vertical: true)
             if confirmingReset {
                 HStack(spacing: 8) {
                     Button(action: { confirmingReset = false }) {
                         Text("Cancel")
-                            .font(WIFType.semibold(13))
-                            .foregroundColor(WIFPalette.ink)
+                            .font(TCType.semibold(13))
+                            .foregroundColor(TCPalette.ink)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 11)
-                            .background(RoundedRectangle(cornerRadius: 10).fill(WIFPalette.wash))
+                            .background(RoundedRectangle(cornerRadius: 10).fill(TCPalette.wash))
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(PlainButtonStyle())
@@ -106,17 +106,17 @@ struct WIFSettingsView: View {
                         confirmingReset = false
                     }) {
                         Text("Erase everything")
-                            .font(WIFType.semibold(13))
+                            .font(TCType.semibold(13))
                             .foregroundColor(Color.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 11)
-                            .background(RoundedRectangle(cornerRadius: 10).fill(WIFPalette.rust))
+                            .background(RoundedRectangle(cornerRadius: 10).fill(TCPalette.rust))
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(PlainButtonStyle())
                 }
             } else {
-                WIFGhostButton(title: "Reset saved data", tint: WIFPalette.rust) {
+                TCGhostButton(title: "Reset saved data", tint: TCPalette.rust) {
                     confirmingReset = true
                 }
             }
@@ -124,16 +124,16 @@ struct WIFSettingsView: View {
     }
 
     private var aboutCard: some View {
-        WIFCard {
-            Text("Will It Fit")
-                .font(WIFType.heading(16))
-                .foregroundColor(WIFPalette.ink)
-            WIFKeyValue(key: "Version", value: "1.0")
-            WIFKeyValue(key: "Saved items", value: "\(store.items.count)")
-            WIFKeyValue(key: "Saved routes", value: "\(store.routes.count)")
+        TCCard {
+            Text("Turnclear")
+                .font(TCType.heading(16))
+                .foregroundColor(TCPalette.ink)
+            TCKeyValue(key: "Version", value: "1.0")
+            TCKeyValue(key: "Saved items", value: "\(store.items.count)")
+            TCKeyValue(key: "Saved routes", value: "\(store.routes.count)")
             Text("Works entirely offline. No camera, no location, no account.")
-                .font(WIFType.body(11.5))
-                .foregroundColor(WIFPalette.slate)
+                .font(TCType.body(11.5))
+                .foregroundColor(TCPalette.slate)
                 .fixedSize(horizontal: false, vertical: true)
         }
     }

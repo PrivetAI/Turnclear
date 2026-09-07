@@ -3,7 +3,7 @@ import SwiftUI
 // Every icon in the app is drawn here from a Path. Nothing comes from the system icon set and
 // no glyph font is used, so the look is identical on every device and every iOS version.
 
-struct WIFDoorGlyph: Shape {
+struct TCDoorGlyph: Shape {
     func path(in rect: CGRect) -> Path {
         var p = Path()
         let w = rect.width, h = rect.height
@@ -20,7 +20,7 @@ struct WIFDoorGlyph: Shape {
     }
 }
 
-struct WIFTurnGlyph: Shape {
+struct TCTurnGlyph: Shape {
     func path(in rect: CGRect) -> Path {
         var p = Path()
         let w = rect.width, h = rect.height
@@ -35,7 +35,7 @@ struct WIFTurnGlyph: Shape {
     }
 }
 
-struct WIFStairGlyph: Shape {
+struct TCStairGlyph: Shape {
     func path(in rect: CGRect) -> Path {
         var p = Path()
         let w = rect.width, h = rect.height
@@ -53,7 +53,7 @@ struct WIFStairGlyph: Shape {
     }
 }
 
-struct WIFLiftGlyph: Shape {
+struct TCLiftGlyph: Shape {
     func path(in rect: CGRect) -> Path {
         var p = Path()
         let w = rect.width, h = rect.height
@@ -73,7 +73,7 @@ struct WIFLiftGlyph: Shape {
     }
 }
 
-struct WIFSofaGlyph: Shape {
+struct TCSofaGlyph: Shape {
     func path(in rect: CGRect) -> Path {
         var p = Path()
         let w = rect.width, h = rect.height
@@ -93,7 +93,7 @@ struct WIFSofaGlyph: Shape {
     }
 }
 
-struct WIFRouteGlyph: Shape {
+struct TCRouteGlyph: Shape {
     func path(in rect: CGRect) -> Path {
         var p = Path()
         let w = rect.width, h = rect.height
@@ -111,7 +111,7 @@ struct WIFRouteGlyph: Shape {
     }
 }
 
-struct WIFRulerGlyph: Shape {
+struct TCRulerGlyph: Shape {
     func path(in rect: CGRect) -> Path {
         var p = Path()
         let w = rect.width, h = rect.height
@@ -130,7 +130,7 @@ struct WIFRulerGlyph: Shape {
     }
 }
 
-struct WIFSlidersGlyph: Shape {
+struct TCSlidersGlyph: Shape {
     func path(in rect: CGRect) -> Path {
         var p = Path()
         let w = rect.width, h = rect.height
@@ -148,7 +148,7 @@ struct WIFSlidersGlyph: Shape {
     }
 }
 
-struct WIFCheckGlyph: Shape {
+struct TCCheckGlyph: Shape {
     func path(in rect: CGRect) -> Path {
         var p = Path()
         p.move(to: CGPoint(x: rect.minX + rect.width * 0.18, y: rect.minY + rect.height * 0.54))
@@ -158,7 +158,7 @@ struct WIFCheckGlyph: Shape {
     }
 }
 
-struct WIFCrossGlyph: Shape {
+struct TCCrossGlyph: Shape {
     func path(in rect: CGRect) -> Path {
         var p = Path()
         let inset = min(rect.width, rect.height) * 0.24
@@ -171,7 +171,7 @@ struct WIFCrossGlyph: Shape {
 }
 
 /// A turned-object mark: a small rectangle drawn on a slant.
-struct WIFTiltGlyph: Shape {
+struct TCTiltGlyph: Shape {
     func path(in rect: CGRect) -> Path {
         var p = Path()
         let c = CGPoint(x: rect.midX, y: rect.midY)
@@ -191,7 +191,7 @@ struct WIFTiltGlyph: Shape {
     }
 }
 
-struct WIFPlusGlyph: Shape {
+struct TCPlusGlyph: Shape {
     func path(in rect: CGRect) -> Path {
         var p = Path()
         let inset = min(rect.width, rect.height) * 0.24
@@ -203,7 +203,7 @@ struct WIFPlusGlyph: Shape {
     }
 }
 
-struct WIFTrashGlyph: Shape {
+struct TCTrashGlyph: Shape {
     func path(in rect: CGRect) -> Path {
         var p = Path()
         let w = rect.width, h = rect.height
@@ -221,7 +221,7 @@ struct WIFTrashGlyph: Shape {
 }
 
 /// Points up by default; rotate for the other directions.
-struct WIFChevronGlyph: Shape {
+struct TCChevronGlyph: Shape {
     func path(in rect: CGRect) -> Path {
         var p = Path()
         p.move(to: CGPoint(x: rect.minX + rect.width * 0.22, y: rect.minY + rect.height * 0.64))
@@ -231,7 +231,7 @@ struct WIFChevronGlyph: Shape {
     }
 }
 
-struct WIFDiamondGlyph: Shape {
+struct TCDiamondGlyph: Shape {
     func path(in rect: CGRect) -> Path {
         var p = Path()
         p.move(to: CGPoint(x: rect.midX, y: rect.minY))
@@ -243,7 +243,7 @@ struct WIFDiamondGlyph: Shape {
     }
 }
 
-struct WIFBoxGlyph: Shape {
+struct TCBoxGlyph: Shape {
     func path(in rect: CGRect) -> Path {
         var p = Path()
         let w = rect.width, h = rect.height
@@ -265,10 +265,10 @@ struct WIFBoxGlyph: Shape {
 
 /// Wraps a glyph in a fixed square so icons line up wherever they are used. The tap target is
 /// always added by the caller — a stroked path on its own has almost no hit area.
-struct WIFIcon<G: Shape>: View {
+struct TCIcon<G: Shape>: View {
     let glyph: G
     var size: CGFloat = 22
-    var color: Color = WIFPalette.ink
+    var color: Color = TCPalette.ink
     var weight: CGFloat = 1.8
     var filled: Bool = false
 
@@ -285,17 +285,17 @@ struct WIFIcon<G: Shape>: View {
 }
 
 /// The icon that belongs to an obstacle kind, ready to drop into a row.
-struct WIFKindIcon: View {
-    let kind: WIFObstacleKind
+struct TCKindIcon: View {
+    let kind: TCObstacleKind
     var size: CGFloat = 22
-    var color: Color = WIFPalette.ink
+    var color: Color = TCPalette.ink
 
     var body: some View {
         switch kind {
-        case .opening: return AnyView(WIFIcon(glyph: WIFDoorGlyph(), size: size, color: color))
-        case .turn: return AnyView(WIFIcon(glyph: WIFTurnGlyph(), size: size, color: color))
-        case .stair: return AnyView(WIFIcon(glyph: WIFStairGlyph(), size: size, color: color))
-        case .elevator: return AnyView(WIFIcon(glyph: WIFLiftGlyph(), size: size, color: color))
+        case .opening: return AnyView(TCIcon(glyph: TCDoorGlyph(), size: size, color: color))
+        case .turn: return AnyView(TCIcon(glyph: TCTurnGlyph(), size: size, color: color))
+        case .stair: return AnyView(TCIcon(glyph: TCStairGlyph(), size: size, color: color))
+        case .elevator: return AnyView(TCIcon(glyph: TCLiftGlyph(), size: size, color: color))
         }
     }
 }

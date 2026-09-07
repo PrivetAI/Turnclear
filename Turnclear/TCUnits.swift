@@ -3,7 +3,7 @@ import Foundation
 /// Every measurement in this app is stored in millimetres and only converted at the edges
 /// (text fields and labels). Keeping one canonical unit is what stops a value from drifting
 /// when the user flips the global unit switch back and forth.
-enum WIFUnit: String, Codable, CaseIterable {
+enum TCUnit: String, Codable, CaseIterable {
     case centimetres
     case inches
 
@@ -37,39 +37,39 @@ enum WIFUnit: String, Codable, CaseIterable {
     }
 }
 
-enum WIFMeasure {
+enum TCMeasure {
     /// mm -> display unit, rounded for presentation only.
-    static func toUnit(_ millimetres: Double, _ unit: WIFUnit) -> Double {
+    static func toUnit(_ millimetres: Double, _ unit: TCUnit) -> Double {
         millimetres / unit.millimetresPerUnit
     }
 
     /// display unit -> mm, snapped to a tenth of a millimetre so a value survives a
     /// cm -> in -> cm round trip unchanged.
-    static func toMillimetres(_ value: Double, _ unit: WIFUnit) -> Double {
+    static func toMillimetres(_ value: Double, _ unit: TCUnit) -> Double {
         ((value * unit.millimetresPerUnit) * 10.0).rounded() / 10.0
     }
 
-    static func text(_ millimetres: Double, _ unit: WIFUnit) -> String {
+    static func text(_ millimetres: Double, _ unit: TCUnit) -> String {
         format(toUnit(millimetres, unit), decimals: unit.decimals)
     }
 
     /// Number plus unit, e.g. "182.5 cm".
-    static func label(_ millimetres: Double, _ unit: WIFUnit) -> String {
+    static func label(_ millimetres: Double, _ unit: TCUnit) -> String {
         text(millimetres, unit) + " " + unit.shortLabel
     }
 
     /// A signed clearance, e.g. "+3.4 cm" or "-1.2 cm".
-    static func signedLabel(_ millimetres: Double, _ unit: WIFUnit) -> String {
+    static func signedLabel(_ millimetres: Double, _ unit: TCUnit) -> String {
         let value = toUnit(millimetres, unit)
         let sign = value < -0.00001 ? "-" : "+"
         return sign + format(abs(value), decimals: unit.decimals) + " " + unit.shortLabel
     }
 
-    static func triple(_ a: Double, _ b: Double, _ c: Double, _ unit: WIFUnit) -> String {
+    static func triple(_ a: Double, _ b: Double, _ c: Double, _ unit: TCUnit) -> String {
         text(a, unit) + " x " + text(b, unit) + " x " + text(c, unit) + " " + unit.shortLabel
     }
 
-    static func pair(_ a: Double, _ b: Double, _ unit: WIFUnit) -> String {
+    static func pair(_ a: Double, _ b: Double, _ unit: TCUnit) -> String {
         text(a, unit) + " x " + text(b, unit) + " " + unit.shortLabel
     }
 

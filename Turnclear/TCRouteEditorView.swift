@@ -1,55 +1,55 @@
 import SwiftUI
 
-private enum WIFRouteField: Hashable {
+private enum TCRouteField: Hashable {
     case name
 }
 
-struct WIFRouteEditorView: View {
-    let existing: WIFRoute?
+struct TCRouteEditorView: View {
+    let existing: TCRoute?
 
-    @EnvironmentObject private var store: WIFStore
+    @EnvironmentObject private var store: TCStore
     @Environment(\.presentationMode) private var presentationMode
-    @FocusState private var focus: WIFRouteField?
+    @FocusState private var focus: TCRouteField?
 
-    @State private var draft: WIFRoute
+    @State private var draft: TCRoute
     @State private var name: String
 
-    init(existing: WIFRoute?) {
+    init(existing: TCRoute?) {
         self.existing = existing
-        let base = existing ?? WIFRoute(name: "New route", stops: [])
+        let base = existing ?? TCRoute(name: "New route", stops: [])
         _draft = State(initialValue: base)
         _name = State(initialValue: base.name)
     }
 
     var body: some View {
-        WIFScaffold(title: existing == nil ? "New route" : "Edit route",
+        TCScaffold(title: existing == nil ? "New route" : "Edit route",
                     subtitle: "Stages are checked in the order they are listed",
                     showsBack: true) {
-            WIFCard {
-                WIFTextField(title: "Route name", text: $name, field: WIFRouteField.name, focus: $focus)
+            TCCard {
+                TCTextField(title: "Route name", text: $name, field: TCRouteField.name, focus: $focus)
             }
 
             stagesSection
 
-            NavigationLink(destination: WIFObstacleEditorView(existing: nil,
+            NavigationLink(destination: TCObstacleEditorView(existing: nil,
                                                               unit: store.unit,
                                                               onSave: appendStage)) {
                 HStack(spacing: 8) {
-                    WIFIcon(glyph: WIFPlusGlyph(), size: 16, color: Color.white, weight: 2.2)
+                    TCIcon(glyph: TCPlusGlyph(), size: 16, color: Color.white, weight: 2.2)
                     Text("Add a stage")
-                        .font(WIFType.semibold(15))
+                        .font(TCType.semibold(15))
                         .foregroundColor(Color.white)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 13)
-                .background(RoundedRectangle(cornerRadius: 12).fill(WIFPalette.ink))
+                .background(RoundedRectangle(cornerRadius: 12).fill(TCPalette.ink))
                 .contentShape(Rectangle())
             }
             .buttonStyle(PlainButtonStyle())
 
-            WIFPrimaryButton(title: "Save route", tint: WIFPalette.teal) { saveRoute() }
+            TCPrimaryButton(title: "Save route", tint: TCPalette.teal) { saveRoute() }
 
-            WIFNoticeBox(text: "The Presets tab has typical doors, lifts, turns and stairwells you "
+            TCNoticeBox(text: "The Presets tab has typical doors, lifts, turns and stairwells you "
                          + "can drop straight into this route.")
         }
         .toolbar {
@@ -57,8 +57,8 @@ struct WIFRouteEditorView: View {
                 Spacer()
                 Button(action: { focus = nil }) {
                     Text("Done")
-                        .font(WIFType.semibold(15))
-                        .foregroundColor(WIFPalette.ink)
+                        .font(TCType.semibold(15))
+                        .foregroundColor(TCPalette.ink)
                 }
             }
         }
@@ -67,11 +67,11 @@ struct WIFRouteEditorView: View {
     @ViewBuilder
     private var stagesSection: some View {
         if draft.stops.isEmpty {
-            WIFEmptyState(title: "No stages yet",
+            TCEmptyState(title: "No stages yet",
                           message: "Add every door, turn, stairwell and lift between the street and the room, in the order they come.")
         } else {
             VStack(alignment: .leading, spacing: 7) {
-                WIFSectionLabel(text: "Stages")
+                TCSectionLabel(text: "Stages")
                 VStack(spacing: 8) {
                     ForEach(Array(draft.stops.enumerated()), id: \.element.id) { pair in
                         stageCard(index: pair.offset, stage: pair.element)
@@ -81,33 +81,33 @@ struct WIFRouteEditorView: View {
         }
     }
 
-    private func stageCard(index: Int, stage: WIFObstacle) -> some View {
+    private func stageCard(index: Int, stage: TCObstacle) -> some View {
         VStack(alignment: .leading, spacing: 9) {
-            NavigationLink(destination: WIFObstacleEditorView(existing: stage,
+            NavigationLink(destination: TCObstacleEditorView(existing: stage,
                                                               unit: store.unit,
                                                               onSave: { updated in replaceStage(updated) })) {
                 HStack(alignment: .top, spacing: 11) {
                     VStack(spacing: 5) {
                         Text("\(index + 1)")
-                            .font(WIFType.figure(12))
-                            .foregroundColor(WIFPalette.slate)
-                        WIFKindIcon(kind: stage.kind, size: 21, color: WIFPalette.ink)
+                            .font(TCType.figure(12))
+                            .foregroundColor(TCPalette.slate)
+                        TCKindIcon(kind: stage.kind, size: 21, color: TCPalette.ink)
                     }
                     .frame(width: 28)
                     VStack(alignment: .leading, spacing: 3) {
                         Text(stage.name)
-                            .font(WIFType.semibold(14.5))
-                            .foregroundColor(WIFPalette.ink)
+                            .font(TCType.semibold(14.5))
+                            .foregroundColor(TCPalette.ink)
                             .lineLimit(2)
                             .multilineTextAlignment(.leading)
                         Text(stage.summary(store.unit))
-                            .font(WIFType.figure(11))
-                            .foregroundColor(WIFPalette.slate)
+                            .font(TCType.figure(11))
+                            .foregroundColor(TCPalette.slate)
                             .fixedSize(horizontal: false, vertical: true)
                             .multilineTextAlignment(.leading)
                     }
                     Spacer(minLength: 4)
-                    WIFIcon(glyph: WIFChevronGlyph(), size: 14, color: WIFPalette.slate, weight: 2)
+                    TCIcon(glyph: TCChevronGlyph(), size: 14, color: TCPalette.slate, weight: 2)
                         .rotationEffect(.degrees(90))
                         .padding(.top, 3)
                 }
@@ -116,40 +116,40 @@ struct WIFRouteEditorView: View {
             .buttonStyle(PlainButtonStyle())
 
             HStack(spacing: 8) {
-                WIFGlyphButton(glyph: WIFChevronGlyph(), size: 30, glyphSize: 14,
-                               color: WIFPalette.ink, background: WIFPalette.wash,
+                TCGlyphButton(glyph: TCChevronGlyph(), size: 30, glyphSize: 14,
+                               color: TCPalette.ink, background: TCPalette.wash,
                                enabled: index > 0) {
                     moveStage(stage, by: -1)
                 }
-                WIFGlyphButton(glyph: WIFChevronGlyph(), size: 30, glyphSize: 14,
-                               color: WIFPalette.ink, background: WIFPalette.wash,
+                TCGlyphButton(glyph: TCChevronGlyph(), size: 30, glyphSize: 14,
+                               color: TCPalette.ink, background: TCPalette.wash,
                                enabled: index < draft.stops.count - 1) {
                     moveStage(stage, by: 1)
                 }
                 .rotationEffect(.degrees(180))
                 Spacer(minLength: 4)
-                WIFGlyphButton(glyph: WIFTrashGlyph(), size: 30, glyphSize: 14,
-                               color: WIFPalette.rust, background: WIFPalette.rustSoft) {
+                TCGlyphButton(glyph: TCTrashGlyph(), size: 30, glyphSize: 14,
+                               color: TCPalette.rust, background: TCPalette.rustSoft) {
                     removeStage(stage)
                 }
             }
         }
-        .padding(WIFMetric.cardPadding)
+        .padding(TCMetric.cardPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: WIFMetric.corner).fill(WIFPalette.panel))
-        .overlay(RoundedRectangle(cornerRadius: WIFMetric.corner).stroke(WIFPalette.line, lineWidth: 1))
+        .background(RoundedRectangle(cornerRadius: TCMetric.corner).fill(TCPalette.panel))
+        .overlay(RoundedRectangle(cornerRadius: TCMetric.corner).stroke(TCPalette.line, lineWidth: 1))
     }
 
     // MARK: Mutations
 
-    private func appendStage(_ stage: WIFObstacle) {
+    private func appendStage(_ stage: TCObstacle) {
         var next = stage
         next.id = UUID()
         draft.stops.append(next)
         persist()
     }
 
-    private func replaceStage(_ stage: WIFObstacle) {
+    private func replaceStage(_ stage: TCObstacle) {
         if let index = draft.stops.firstIndex(where: { $0.id == stage.id }) {
             draft.stops[index] = stage
         } else {
@@ -158,12 +158,12 @@ struct WIFRouteEditorView: View {
         persist()
     }
 
-    private func removeStage(_ stage: WIFObstacle) {
+    private func removeStage(_ stage: TCObstacle) {
         draft.stops.removeAll(where: { $0.id == stage.id })
         persist()
     }
 
-    private func moveStage(_ stage: WIFObstacle, by offset: Int) {
+    private func moveStage(_ stage: TCObstacle, by offset: Int) {
         guard let from = draft.stops.firstIndex(where: { $0.id == stage.id }) else { return }
         let to = from + offset
         guard to >= 0 && to < draft.stops.count else { return }

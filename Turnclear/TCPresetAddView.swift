@@ -1,33 +1,33 @@
 import SwiftUI
 
 /// Second half of the preset flow: choose which saved route the stage joins.
-struct WIFPresetAddView: View {
+struct TCPresetAddView: View {
     let presetTitle: String
-    let stage: WIFObstacle
+    let stage: TCObstacle
 
-    @EnvironmentObject private var store: WIFStore
+    @EnvironmentObject private var store: TCStore
     @Environment(\.presentationMode) private var presentationMode
 
     var body: some View {
-        WIFScaffold(title: "Add to a route",
+        TCScaffold(title: "Add to a route",
                     subtitle: presetTitle,
                     showsBack: true) {
-            WIFCard {
+            TCCard {
                 Text("This stage")
-                    .font(WIFType.heading(15))
-                    .foregroundColor(WIFPalette.ink)
-                WIFKeyValue(key: stage.kind.title, value: stage.summary(store.unit))
+                    .font(TCType.heading(15))
+                    .foregroundColor(TCPalette.ink)
+                TCKeyValue(key: stage.kind.title, value: stage.summary(store.unit))
                 Text("It joins the end of the route you pick. Move it earlier from the route screen if it belongs there.")
-                    .font(WIFType.body(11.5))
-                    .foregroundColor(WIFPalette.slate)
+                    .font(TCType.body(11.5))
+                    .foregroundColor(TCPalette.slate)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
             if store.routes.isEmpty {
-                WIFEmptyState(title: "No routes to add it to",
+                TCEmptyState(title: "No routes to add it to",
                               message: "Create a route on the Routes tab first, then come back and drop this stage into it.")
             } else {
-                WIFSectionLabel(text: "Pick a route")
+                TCSectionLabel(text: "Pick a route")
                 ForEach(store.routes) { route in
                     routeButton(route)
                 }
@@ -35,30 +35,30 @@ struct WIFPresetAddView: View {
         }
     }
 
-    private func routeButton(_ route: WIFRoute) -> some View {
+    private func routeButton(_ route: TCRoute) -> some View {
         Button(action: {
             store.append(obstacle: stage, toRouteID: route.id)
             presentationMode.wrappedValue.dismiss()
         }) {
             HStack(alignment: .center, spacing: 11) {
-                WIFIcon(glyph: WIFRouteGlyph(), size: 21, color: WIFPalette.ink, weight: 1.9)
+                TCIcon(glyph: TCRouteGlyph(), size: 21, color: TCPalette.ink, weight: 1.9)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(route.name)
-                        .font(WIFType.semibold(15))
-                        .foregroundColor(WIFPalette.ink)
+                        .font(TCType.semibold(15))
+                        .foregroundColor(TCPalette.ink)
                         .multilineTextAlignment(.leading)
                     Text(route.stops.count == 1 ? "1 stage" : "\(route.stops.count) stages")
-                        .font(WIFType.body(11))
-                        .foregroundColor(WIFPalette.slate)
+                        .font(TCType.body(11))
+                        .foregroundColor(TCPalette.slate)
                 }
                 Spacer(minLength: 4)
-                WIFIcon(glyph: WIFPlusGlyph(), size: 16, color: WIFPalette.teal, weight: 2.2)
+                TCIcon(glyph: TCPlusGlyph(), size: 16, color: TCPalette.teal, weight: 2.2)
             }
-            .padding(WIFMetric.cardPadding)
+            .padding(TCMetric.cardPadding)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(RoundedRectangle(cornerRadius: WIFMetric.corner).fill(WIFPalette.panel))
-            .overlay(RoundedRectangle(cornerRadius: WIFMetric.corner)
-                        .stroke(WIFPalette.line, lineWidth: 1))
+            .background(RoundedRectangle(cornerRadius: TCMetric.corner).fill(TCPalette.panel))
+            .overlay(RoundedRectangle(cornerRadius: TCMetric.corner)
+                        .stroke(TCPalette.line, lineWidth: 1))
             .contentShape(Rectangle())
         }
         .buttonStyle(PlainButtonStyle())

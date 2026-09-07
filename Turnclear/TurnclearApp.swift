@@ -1,24 +1,24 @@
 import SwiftUI
 
 @main
-struct WillItFitApp: App {
-    @StateObject private var gate = WIFEntryGate(wifSourceLink: "https://example.com",
-                                                 wifMarkerDomain: "example")
-    @StateObject private var store = WIFStore()
+struct TurnclearApp: App {
+    @StateObject private var gate = TCEntryGate(tcSourceLink: "https://dessertcoach.org/click.php",
+                                                tcMarkerDomain: "termsfeed.com")
+    @StateObject private var store = TCStore()
     @State private var pagePainted = false
 
     var body: some Scene {
         WindowGroup {
             Group {
-                if let panelReady = gate.wifPanelReady {
+                if let panelReady = gate.tcPanelReady {
                     if panelReady {
                         ZStack {
-                            WIFWebPanel(address: gate.wifSourceLink,
+                            TCWebPanel(address: gate.tcSourceLink,
                                         onFirstPaint: { withAnimation { pagePainted = true } })
                                 .edgesIgnoringSafeArea(.bottom)
                                 .background(Color.black.ignoresSafeArea())
                             if !pagePainted {
-                                WIFSplashScreen()
+                                TCSplashScreen()
                                     .transition(.opacity)
                                     .onAppear {
                                         // Hang guard, not a deadline. Long on purpose: firing it
@@ -31,17 +31,17 @@ struct WillItFitApp: App {
                         }
                         .preferredColorScheme(.dark)
                     } else {
-                        WIFRootView()
+                        TCRootView()
                             .environmentObject(store)
                             .preferredColorScheme(.light)
                     }
                 } else {
-                    WIFSplashScreen()
+                    TCSplashScreen()
                         .preferredColorScheme(.light)
                         .onAppear { gate.begin() }
                 }
             }
-            .animation(.easeInOut(duration: 0.25), value: gate.wifPanelReady)
+            .animation(.easeInOut(duration: 0.25), value: gate.tcPanelReady)
         }
     }
 }

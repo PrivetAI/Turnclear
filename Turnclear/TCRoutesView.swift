@@ -1,27 +1,27 @@
 import SwiftUI
 
-struct WIFRoutesView: View {
-    @EnvironmentObject private var store: WIFStore
+struct TCRoutesView: View {
+    @EnvironmentObject private var store: TCStore
     @State private var pendingDelete: UUID?
 
     var body: some View {
-        WIFScaffold(title: "Routes", subtitle: "Everything the object has to get past, in order") {
-            NavigationLink(destination: WIFRouteEditorView(existing: nil).environmentObject(store)) {
+        TCScaffold(title: "Routes", subtitle: "Everything the object has to get past, in order") {
+            NavigationLink(destination: TCRouteEditorView(existing: nil).environmentObject(store)) {
                 HStack(spacing: 8) {
-                    WIFIcon(glyph: WIFPlusGlyph(), size: 16, color: Color.white, weight: 2.2)
+                    TCIcon(glyph: TCPlusGlyph(), size: 16, color: Color.white, weight: 2.2)
                     Text("Add a route")
-                        .font(WIFType.semibold(15))
+                        .font(TCType.semibold(15))
                         .foregroundColor(Color.white)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 13)
-                .background(RoundedRectangle(cornerRadius: 12).fill(WIFPalette.ink))
+                .background(RoundedRectangle(cornerRadius: 12).fill(TCPalette.ink))
                 .contentShape(Rectangle())
             }
             .buttonStyle(PlainButtonStyle())
 
             if store.routes.isEmpty {
-                WIFEmptyState(title: "No routes yet",
+                TCEmptyState(title: "No routes yet",
                               message: "A route is the run from the street to the room: front door, hallway turn, lift, flat door. Order matters, because the answer is only as good as the tightest stage.")
             } else {
                 ForEach(store.routes) { route in
@@ -31,28 +31,28 @@ struct WIFRoutesView: View {
         }
     }
 
-    private func routeCard(_ route: WIFRoute) -> some View {
+    private func routeCard(_ route: TCRoute) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .top, spacing: 10) {
-                NavigationLink(destination: WIFRouteEditorView(existing: route)
+                NavigationLink(destination: TCRouteEditorView(existing: route)
                                 .environmentObject(store)) {
                     VStack(alignment: .leading, spacing: 7) {
                         HStack(spacing: 8) {
-                            WIFIcon(glyph: WIFRouteGlyph(), size: 22, color: WIFPalette.ink, weight: 1.9)
+                            TCIcon(glyph: TCRouteGlyph(), size: 22, color: TCPalette.ink, weight: 1.9)
                             Text(route.name)
-                                .font(WIFType.semibold(15))
-                                .foregroundColor(WIFPalette.ink)
+                                .font(TCType.semibold(15))
+                                .foregroundColor(TCPalette.ink)
                                 .lineLimit(2)
                                 .multilineTextAlignment(.leading)
                             Spacer(minLength: 4)
-                            WIFIcon(glyph: WIFChevronGlyph(), size: 15, color: WIFPalette.slate, weight: 2)
+                            TCIcon(glyph: TCChevronGlyph(), size: 15, color: TCPalette.slate, weight: 2)
                                 .rotationEffect(.degrees(90))
                         }
                         Text(route.stops.isEmpty
                              ? "No stages yet"
                              : route.stops.map { $0.kind.shortTitle }.joined(separator: "  >  "))
-                            .font(WIFType.body(11.5))
-                            .foregroundColor(WIFPalette.slate)
+                            .font(TCType.body(11.5))
+                            .foregroundColor(TCPalette.slate)
                             .fixedSize(horizontal: false, vertical: true)
                             .multilineTextAlignment(.leading)
                     }
@@ -60,11 +60,11 @@ struct WIFRoutesView: View {
                 }
                 .buttonStyle(PlainButtonStyle())
 
-                WIFGlyphButton(glyph: WIFTrashGlyph(),
+                TCGlyphButton(glyph: TCTrashGlyph(),
                                size: 32,
                                glyphSize: 15,
-                               color: WIFPalette.rust,
-                               background: WIFPalette.rustSoft) {
+                               color: TCPalette.rust,
+                               background: TCPalette.rustSoft) {
                     pendingDelete = (pendingDelete == route.id) ? nil : route.id
                 }
             }
@@ -72,15 +72,15 @@ struct WIFRoutesView: View {
             if pendingDelete == route.id {
                 HStack(spacing: 8) {
                     Text("Delete this route?")
-                        .font(WIFType.body(12))
-                        .foregroundColor(WIFPalette.rust)
+                        .font(TCType.body(12))
+                        .foregroundColor(TCPalette.rust)
                     Spacer(minLength: 4)
                     Button(action: { pendingDelete = nil }) {
                         Text("Keep")
-                            .font(WIFType.semibold(12))
-                            .foregroundColor(WIFPalette.ink)
+                            .font(TCType.semibold(12))
+                            .foregroundColor(TCPalette.ink)
                             .padding(.horizontal, 12).padding(.vertical, 7)
-                            .background(RoundedRectangle(cornerRadius: 8).fill(WIFPalette.wash))
+                            .background(RoundedRectangle(cornerRadius: 8).fill(TCPalette.wash))
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(PlainButtonStyle())
@@ -89,21 +89,21 @@ struct WIFRoutesView: View {
                         pendingDelete = nil
                     }) {
                         Text("Delete")
-                            .font(WIFType.semibold(12))
+                            .font(TCType.semibold(12))
                             .foregroundColor(Color.white)
                             .padding(.horizontal, 12).padding(.vertical, 7)
-                            .background(RoundedRectangle(cornerRadius: 8).fill(WIFPalette.rust))
+                            .background(RoundedRectangle(cornerRadius: 8).fill(TCPalette.rust))
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(PlainButtonStyle())
                 }
             }
         }
-        .padding(WIFMetric.cardPadding)
+        .padding(TCMetric.cardPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: WIFMetric.corner).fill(WIFPalette.panel))
-        .overlay(RoundedRectangle(cornerRadius: WIFMetric.corner)
-                    .stroke(store.selectedRoute?.id == route.id ? WIFPalette.ink : WIFPalette.line,
+        .background(RoundedRectangle(cornerRadius: TCMetric.corner).fill(TCPalette.panel))
+        .overlay(RoundedRectangle(cornerRadius: TCMetric.corner)
+                    .stroke(store.selectedRoute?.id == route.id ? TCPalette.ink : TCPalette.line,
                             lineWidth: store.selectedRoute?.id == route.id ? 2 : 1))
     }
 }

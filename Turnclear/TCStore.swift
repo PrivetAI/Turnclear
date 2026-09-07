@@ -3,19 +3,19 @@ import SwiftUI
 
 /// The whole saved state, as one JSON blob in UserDefaults. Every field is optional on the way
 /// in so a payload written by an older build can never throw and wipe the library.
-private struct WIFSaveFile: Codable {
-    var items: [WIFItem]
-    var routes: [WIFRoute]
-    var unit: WIFUnit
-    var adjustments: WIFAdjustments
+private struct TCSaveFile: Codable {
+    var items: [TCItem]
+    var routes: [TCRoute]
+    var unit: TCUnit
+    var adjustments: TCAdjustments
     var selectedItemID: UUID?
     var selectedRouteID: UUID?
     var hasSeeded: Bool
 
-    init(items: [WIFItem],
-         routes: [WIFRoute],
-         unit: WIFUnit,
-         adjustments: WIFAdjustments,
+    init(items: [TCItem],
+         routes: [TCRoute],
+         unit: TCUnit,
+         adjustments: TCAdjustments,
          selectedItemID: UUID?,
          selectedRouteID: UUID?,
          hasSeeded: Bool) {
@@ -30,23 +30,23 @@ private struct WIFSaveFile: Codable {
 
     init(from decoder: Decoder) throws {
         let box = try decoder.container(keyedBy: CodingKeys.self)
-        items = (try? box.decodeIfPresent([WIFItem].self, forKey: .items)) ?? []
-        routes = (try? box.decodeIfPresent([WIFRoute].self, forKey: .routes)) ?? []
-        unit = (try? box.decodeIfPresent(WIFUnit.self, forKey: .unit)) ?? .centimetres
-        adjustments = (try? box.decodeIfPresent(WIFAdjustments.self, forKey: .adjustments)) ?? WIFAdjustments()
+        items = (try? box.decodeIfPresent([TCItem].self, forKey: .items)) ?? []
+        routes = (try? box.decodeIfPresent([TCRoute].self, forKey: .routes)) ?? []
+        unit = (try? box.decodeIfPresent(TCUnit.self, forKey: .unit)) ?? .centimetres
+        adjustments = (try? box.decodeIfPresent(TCAdjustments.self, forKey: .adjustments)) ?? TCAdjustments()
         selectedItemID = (try? box.decodeIfPresent(UUID.self, forKey: .selectedItemID)) ?? nil
         selectedRouteID = (try? box.decodeIfPresent(UUID.self, forKey: .selectedRouteID)) ?? nil
         hasSeeded = (try? box.decodeIfPresent(Bool.self, forKey: .hasSeeded)) ?? false
     }
 }
 
-final class WIFStore: ObservableObject {
-    private static let storageKey = "willitfit.library.v1"
+final class TCStore: ObservableObject {
+    private static let storageKey = "turnclear.library.v1"
 
-    @Published var items: [WIFItem] = []
-    @Published var routes: [WIFRoute] = []
-    @Published var unit: WIFUnit = .centimetres
-    @Published var adjustments = WIFAdjustments()
+    @Published var items: [TCItem] = []
+    @Published var routes: [TCRoute] = []
+    @Published var unit: TCUnit = .centimetres
+    @Published var adjustments = TCAdjustments()
     @Published var selectedItemID: UUID?
     @Published var selectedRouteID: UUID?
 
@@ -60,28 +60,28 @@ final class WIFStore: ObservableObject {
 
     // MARK: Derived
 
-    var selectedItem: WIFItem? {
+    var selectedItem: TCItem? {
         guard let id = selectedItemID else { return items.first }
         return items.first(where: { $0.id == id }) ?? items.first
     }
 
-    var selectedRoute: WIFRoute? {
+    var selectedRoute: TCRoute? {
         guard let id = selectedRouteID else { return routes.first }
         return routes.first(where: { $0.id == id }) ?? routes.first
     }
 
-    var currentResult: WIFCheckResult? {
+    var currentResult: TCCheckResult? {
         guard let item = selectedItem, let route = selectedRoute, !route.stops.isEmpty else { return nil }
-        return WIFEngine.run(item: item, route: route, adjust: adjustments, unit: unit)
+        return TCEngine.run(item: item, route: route, adjust: adjustments, unit: unit)
     }
 
-    func result(for item: WIFItem, route: WIFRoute) -> WIFCheckResult {
-        WIFEngine.run(item: item, route: route, adjust: adjustments, unit: unit)
+    func result(for item: TCItem, route: TCRoute) -> TCCheckResult {
+        TCEngine.run(item: item, route: route, adjust: adjustments, unit: unit)
     }
 
     // MARK: Items
 
-    func upsert(item: WIFItem) {
+    func upsert(item: TCItem) {
         if let index = items.firstIndex(where: { $0.id == item.id }) {
             items[index] = item
         } else {
@@ -108,7 +108,7 @@ final class WIFStore: ObservableObject {
 
     // MARK: Routes
 
-    func upsert(route: WIFRoute) {
+    func upsert(route: TCRoute) {
         if let index = routes.firstIndex(where: { $0.id == route.id }) {
             routes[index] = route
         } else {
@@ -124,7 +124,7 @@ final class WIFStore: ObservableObject {
         save()
     }
 
-    func append(obstacle: WIFObstacle, toRouteID routeID: UUID) {
+    func append(obstacle: TCObstacle, toRouteID routeID: UUID) {
         guard let index = routes.firstIndex(where: { $0.id == routeID }) else { return }
         var stage = obstacle
         stage.id = UUID()
@@ -132,7 +132,7 @@ final class WIFStore: ObservableObject {
         save()
     }
 
-    func replace(obstacle: WIFObstacle, inRouteID routeID: UUID) {
+    func replace(obstacle: TCObstacle, inRouteID routeID: UUID) {
         guard let routeIndex = routes.firstIndex(where: { $0.id == routeID }) else { return }
         guard let stopIndex = routes[routeIndex].stops.firstIndex(where: { $0.id == obstacle.id }) else {
             routes[routeIndex].stops.append(obstacle)
@@ -161,13 +161,13 @@ final class WIFStore: ObservableObject {
 
     // MARK: Settings
 
-    func setUnit(_ newUnit: WIFUnit) {
+    func setUnit(_ newUnit: TCUnit) {
         guard newUnit != unit else { return }
         unit = newUnit
         save()
     }
 
-    func setAdjustments(_ newValue: WIFAdjustments) {
+    func setAdjustments(_ newValue: TCAdjustments) {
         adjustments = newValue
         save()
     }
@@ -185,7 +185,7 @@ final class WIFStore: ObservableObject {
     func resetEverything() {
         items = []
         routes = []
-        adjustments = WIFAdjustments()
+        adjustments = TCAdjustments()
         selectedItemID = nil
         selectedRouteID = nil
         hasSeeded = false
@@ -197,7 +197,7 @@ final class WIFStore: ObservableObject {
 
     func save() {
         guard !loading else { return }
-        let payload = WIFSaveFile(items: items,
+        let payload = TCSaveFile(items: items,
                                   routes: routes,
                                   unit: unit,
                                   adjustments: adjustments,
@@ -205,13 +205,13 @@ final class WIFStore: ObservableObject {
                                   selectedRouteID: selectedRouteID,
                                   hasSeeded: hasSeeded)
         guard let data = try? JSONEncoder().encode(payload) else { return }
-        UserDefaults.standard.set(data, forKey: WIFStore.storageKey)
+        UserDefaults.standard.set(data, forKey: TCStore.storageKey)
     }
 
     private func load() {
         loading = true
-        if let data = UserDefaults.standard.data(forKey: WIFStore.storageKey),
-           let payload = try? JSONDecoder().decode(WIFSaveFile.self, from: data) {
+        if let data = UserDefaults.standard.data(forKey: TCStore.storageKey),
+           let payload = try? JSONDecoder().decode(TCSaveFile.self, from: data) {
             items = payload.items
             routes = payload.routes
             unit = payload.unit
@@ -235,7 +235,7 @@ final class WIFStore: ObservableObject {
         guard !hasSeeded else { return }
         hasSeeded = true
 
-        let sofa = WIFItem(name: "Three-seat sofa",
+        let sofa = TCItem(name: "Three-seat sofa",
                            widthMM: 2100,
                            heightMM: 880,
                            depthMM: 950,
@@ -244,7 +244,7 @@ final class WIFStore: ObservableObject {
                            weightKG: 62,
                            removableWeightKG: 9,
                            note: "Measured over the arms, back cushions in place.")
-        let fridge = WIFItem(name: "Tall fridge freezer",
+        let fridge = TCItem(name: "Tall fridge freezer",
                              widthMM: 600,
                              heightMM: 1850,
                              depthMM: 660,
@@ -254,30 +254,30 @@ final class WIFStore: ObservableObject {
                              removableWeightKG: 6,
                              note: "Depth includes the door handle.")
 
-        let route = WIFRoute(name: "Street to living room", stops: [
-            WIFObstacle(name: "Building entrance", kind: .opening,
+        let route = TCRoute(name: "Street to living room", stops: [
+            TCObstacle(name: "Building entrance", kind: .opening,
                         openWidthMM: 1000, openHeightMM: 2100, hingeGainMM: 40),
-            WIFObstacle(name: "Ground floor turn", kind: .turn,
+            TCObstacle(name: "Ground floor turn", kind: .turn,
                         corridorAMM: 1400, corridorBMM: 1150, headroomMM: 0),
-            WIFObstacle(name: "Lift", kind: .elevator,
+            TCObstacle(name: "Lift", kind: .elevator,
                         openWidthMM: 900, openHeightMM: 2000, hingeGainMM: 0,
                         cabinWidthMM: 1100, cabinDepthMM: 1400, cabinHeightMM: 2200),
-            WIFObstacle(name: "Flat door", kind: .opening,
+            TCObstacle(name: "Flat door", kind: .opening,
                         openWidthMM: 900, openHeightMM: 2050, hingeGainMM: 45),
-            WIFObstacle(name: "Hallway turn", kind: .turn,
+            TCObstacle(name: "Hallway turn", kind: .turn,
                         corridorAMM: 1100, corridorBMM: 950, headroomMM: 0),
-            WIFObstacle(name: "Living room door", kind: .opening,
+            TCObstacle(name: "Living room door", kind: .opening,
                         openWidthMM: 850, openHeightMM: 2000, hingeGainMM: 35)
         ])
 
-        let stairRoute = WIFRoute(name: "Back stairs, no lift", stops: [
-            WIFObstacle(name: "Back entrance", kind: .opening,
+        let stairRoute = TCRoute(name: "Back stairs, no lift", stops: [
+            TCObstacle(name: "Back entrance", kind: .opening,
                         openWidthMM: 900, openHeightMM: 2000, hingeGainMM: 40),
-            WIFObstacle(name: "First landing", kind: .stair,
+            TCObstacle(name: "First landing", kind: .stair,
                         corridorAMM: 1050, corridorBMM: 1200, headroomMM: 2150),
-            WIFObstacle(name: "Second landing", kind: .stair,
+            TCObstacle(name: "Second landing", kind: .stair,
                         corridorAMM: 1050, corridorBMM: 1100, headroomMM: 2050),
-            WIFObstacle(name: "Flat door", kind: .opening,
+            TCObstacle(name: "Flat door", kind: .opening,
                         openWidthMM: 850, openHeightMM: 2000, hingeGainMM: 40)
         ])
 

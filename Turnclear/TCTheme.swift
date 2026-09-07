@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Fixed palette. The app forces a light appearance (Info.plist `UIUserInterfaceStyle = Light`)
 /// and never reads the device theme, so every colour below is an absolute value.
-enum WIFPalette {
+enum TCPalette {
     static let ink       = Color(red: 0.086, green: 0.149, blue: 0.247)   // #16263F
     static let inkSoft   = Color(red: 0.180, green: 0.259, blue: 0.361)
     static let paper     = Color(red: 0.957, green: 0.937, blue: 0.902)   // #F4EFE6
@@ -19,7 +19,7 @@ enum WIFPalette {
     static let amberSoft = Color(red: 0.988, green: 0.933, blue: 0.855)
 }
 
-enum WIFType {
+enum TCType {
     static func display(_ size: CGFloat) -> Font { .system(size: size, weight: .heavy) }
     static func heading(_ size: CGFloat) -> Font { .system(size: size, weight: .bold) }
     static func body(_ size: CGFloat) -> Font { .system(size: size, weight: .regular) }
@@ -29,7 +29,7 @@ enum WIFType {
     static func caption(_ size: CGFloat) -> Font { .system(size: size, weight: .semibold, design: .monospaced) }
 }
 
-enum WIFMetric {
+enum TCMetric {
     /// Widest the reading column ever gets. Above this the content is centred, which is what
     /// keeps iPad and landscape from stretching a form across the whole screen.
     static let contentMaxWidth: CGFloat = 620

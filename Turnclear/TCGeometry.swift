@@ -3,7 +3,7 @@ import CoreGraphics
 
 // MARK: - Results
 
-enum WIFVerdict {
+enum TCVerdict {
     /// Goes through the way the object normally stands.
     case clear
     /// Goes through, but only turned side-on or tilted.
@@ -38,7 +38,7 @@ enum WIFVerdict {
 
 /// Everything the plan-view turn drawing needs. Corridor A is the strip the object arrives
 /// along, corridor B the one it leaves along; the inner corner sits at (B, A).
-struct WIFTurnPlan {
+struct TCTurnPlan {
     let corridorA: Double
     let corridorB: Double
     let length: Double
@@ -48,7 +48,7 @@ struct WIFTurnPlan {
 }
 
 /// Everything the head-on opening drawing needs.
-struct WIFOpeningPlan {
+struct TCOpeningPlan {
     let openWidth: Double
     let openHeight: Double
     let sideAcross: Double
@@ -58,16 +58,16 @@ struct WIFOpeningPlan {
     let slackHeight: Double
 }
 
-enum WIFStageDrawing {
-    case turn(WIFTurnPlan)
-    case opening(WIFOpeningPlan)
+enum TCStageDrawing {
+    case turn(TCTurnPlan)
+    case opening(TCOpeningPlan)
 }
 
-struct WIFStageOutcome: Identifiable {
+struct TCStageOutcome: Identifiable {
     let id: UUID
     let name: String
-    let kind: WIFObstacleKind
-    let verdict: WIFVerdict
+    let kind: TCObstacleKind
+    let verdict: TCVerdict
     /// Positive = spare room at the tightest point, negative = how far it overlaps.
     let marginMM: Double
     /// What runs out first, in plain words.
@@ -77,20 +77,20 @@ struct WIFStageOutcome: Identifiable {
     let poseLabel: String
     let headline: String
     let notes: [String]
-    let drawing: WIFStageDrawing?
+    let drawing: TCStageDrawing?
 }
 
-struct WIFCheckResult {
-    let stages: [WIFStageOutcome]
+struct TCCheckResult {
+    let stages: [TCStageOutcome]
     let tightestStageID: UUID?
-    let verdict: WIFVerdict
+    let verdict: TCVerdict
     let effectiveWidth: Double
     let effectiveHeight: Double
     let effectiveDepth: Double
     let effectiveWeight: Double
     let adjustmentNotes: [String]
 
-    var tightestStage: WIFStageOutcome? {
+    var tightestStage: TCStageOutcome? {
         guard let id = tightestStageID else { return nil }
         return stages.first(where: { $0.id == id })
     }
@@ -98,7 +98,7 @@ struct WIFCheckResult {
 
 // MARK: - Primitives
 
-enum WIFGeom {
+enum TCGeom {
     /// 0.25 degree steps across a quarter turn — 361 samples including both ends.
     static let sweepSteps = 360
     static let sweepStepDeg = 0.25
@@ -299,7 +299,7 @@ enum WIFGeom {
 /// One way of presenting the object to a flat opening: what is across the opening, what is up
 /// it, and what travels through. `tilted` marks the ways that need the object tipped off the
 /// floor rather than merely turned on the spot.
-struct WIFOpeningPose {
+struct TCOpeningPose {
     let across: Double
     let up: Double
     let through: Double
@@ -308,7 +308,7 @@ struct WIFOpeningPose {
 }
 
 /// One way of carrying the object round a turn: what is vertical, and the plan-view rectangle.
-struct WIFCarryPose {
+struct TCCarryPose {
     let vertical: Double
     let length: Double
     let width: Double
@@ -316,37 +316,37 @@ struct WIFCarryPose {
     let label: String
 }
 
-enum WIFPoses {
+enum TCPoses {
     /// Upright, on its feet. Only the yaw changes.
-    static func uprightOpening(w: Double, h: Double, d: Double) -> [WIFOpeningPose] {
+    static func uprightOpening(w: Double, h: Double, d: Double) -> [TCOpeningPose] {
         [
-            WIFOpeningPose(across: w, up: h, through: d, tilted: false, label: "upright, front first"),
-            WIFOpeningPose(across: d, up: h, through: w, tilted: false, label: "upright, side first")
+            TCOpeningPose(across: w, up: h, through: d, tilted: false, label: "upright, front first"),
+            TCOpeningPose(across: d, up: h, through: w, tilted: false, label: "upright, side first")
         ]
     }
 
-    static func allOpening(w: Double, h: Double, d: Double) -> [WIFOpeningPose] {
+    static func allOpening(w: Double, h: Double, d: Double) -> [TCOpeningPose] {
         uprightOpening(w: w, h: h, d: d) + [
-            WIFOpeningPose(across: w, up: d, through: h, tilted: true, label: "tipped on its back, front first"),
-            WIFOpeningPose(across: d, up: w, through: h, tilted: true, label: "tipped on its back, side first"),
-            WIFOpeningPose(across: h, up: w, through: d, tilted: true, label: "on its side, front first"),
-            WIFOpeningPose(across: h, up: d, through: w, tilted: true, label: "on its side, side first")
+            TCOpeningPose(across: w, up: d, through: h, tilted: true, label: "tipped on its back, front first"),
+            TCOpeningPose(across: d, up: w, through: h, tilted: true, label: "tipped on its back, side first"),
+            TCOpeningPose(across: h, up: w, through: d, tilted: true, label: "on its side, front first"),
+            TCOpeningPose(across: h, up: d, through: w, tilted: true, label: "on its side, side first")
         ]
     }
 
-    static func uprightCarry(w: Double, h: Double, d: Double) -> [WIFCarryPose] {
+    static func uprightCarry(w: Double, h: Double, d: Double) -> [TCCarryPose] {
         [
-            WIFCarryPose(vertical: h, length: w, width: d, tilted: false, label: "upright, carried lengthwise"),
-            WIFCarryPose(vertical: h, length: d, width: w, tilted: false, label: "upright, carried side-on")
+            TCCarryPose(vertical: h, length: w, width: d, tilted: false, label: "upright, carried lengthwise"),
+            TCCarryPose(vertical: h, length: d, width: w, tilted: false, label: "upright, carried side-on")
         ]
     }
 
-    static func allCarry(w: Double, h: Double, d: Double) -> [WIFCarryPose] {
+    static func allCarry(w: Double, h: Double, d: Double) -> [TCCarryPose] {
         uprightCarry(w: w, h: h, d: d) + [
-            WIFCarryPose(vertical: w, length: h, width: d, tilted: true, label: "stood on one end, height leading"),
-            WIFCarryPose(vertical: w, length: d, width: h, tilted: true, label: "stood on one end, depth leading"),
-            WIFCarryPose(vertical: d, length: w, width: h, tilted: true, label: "laid on its back, width leading"),
-            WIFCarryPose(vertical: d, length: h, width: w, tilted: true, label: "laid on its back, height leading")
+            TCCarryPose(vertical: w, length: h, width: d, tilted: true, label: "stood on one end, height leading"),
+            TCCarryPose(vertical: w, length: d, width: h, tilted: true, label: "stood on one end, depth leading"),
+            TCCarryPose(vertical: d, length: w, width: h, tilted: true, label: "laid on its back, width leading"),
+            TCCarryPose(vertical: d, length: h, width: w, tilted: true, label: "laid on its back, height leading")
         ]
     }
 }
@@ -355,26 +355,26 @@ enum WIFPoses {
 
 /// One evaluated way through a stage: how much room is left, where it runs out, and the pose
 /// that achieved it.
-private struct WIFAttempt {
+private struct TCAttempt {
     var slack: Double
     var angle: Double
     var binding: String
     var pose: String
-    var drawing: WIFStageDrawing?
+    var drawing: TCStageDrawing?
     var extra: [String] = []
 
-    static let impossible = WIFAttempt(slack: -Double.greatestFiniteMagnitude,
+    static let impossible = TCAttempt(slack: -Double.greatestFiniteMagnitude,
                                        angle: 0,
                                        binding: "no orientation available",
                                        pose: "-",
                                        drawing: nil)
 }
 
-enum WIFEngine {
+enum TCEngine {
 
     // MARK: Effective object
 
-    static func effectiveSize(_ item: WIFItem, _ adjust: WIFAdjustments) -> (w: Double, h: Double, d: Double) {
+    static func effectiveSize(_ item: TCItem, _ adjust: TCAdjustments) -> (w: Double, h: Double, d: Double) {
         var w = max(1, item.widthMM)
         var h = max(1, item.heightMM)
         var d = max(1, item.depthMM)
@@ -390,7 +390,7 @@ enum WIFEngine {
         return (w, h, d)
     }
 
-    static func effectiveWeight(_ item: WIFItem, _ adjust: WIFAdjustments) -> Double {
+    static func effectiveWeight(_ item: TCItem, _ adjust: TCAdjustments) -> Double {
         let base = max(0, item.weightKG)
         guard adjust.removeDrawers else { return base }
         return max(0, base - max(0, item.removableWeightKG))
@@ -398,28 +398,28 @@ enum WIFEngine {
 
     // MARK: Route
 
-    static func run(item: WIFItem, route: WIFRoute, adjust: WIFAdjustments, unit: WIFUnit) -> WIFCheckResult {
+    static func run(item: TCItem, route: TCRoute, adjust: TCAdjustments, unit: TCUnit) -> TCCheckResult {
         let size = effectiveSize(item, adjust)
         let stages = route.stops.map { stage(for: $0, size: size, adjust: adjust, unit: unit) }
 
-        var tightest: WIFStageOutcome? = nil
+        var tightest: TCStageOutcome? = nil
         for outcome in stages {
             guard let current = tightest else { tightest = outcome; continue }
             if outcome.marginMM < current.marginMM { tightest = outcome }
         }
 
         let worst = stages.map { $0.verdict.rank }.max() ?? 0
-        let overall: WIFVerdict = worst == 2 ? .blocked : (worst == 1 ? .rotated : .clear)
+        let overall: TCVerdict = worst == 2 ? .blocked : (worst == 1 ? .rotated : .clear)
 
         var notes: [String] = []
         if adjust.removePackaging && item.packagingMM > 0 {
-            notes.append("Packaging off: every side is " + WIFMeasure.label(item.packagingMM, unit) + " smaller.")
+            notes.append("Packaging off: every side is " + TCMeasure.label(item.packagingMM, unit) + " smaller.")
         }
         if adjust.removeLegs && item.legHeightMM > 0 {
-            notes.append("Legs off: " + WIFMeasure.label(item.legHeightMM, unit) + " shorter.")
+            notes.append("Legs off: " + TCMeasure.label(item.legHeightMM, unit) + " shorter.")
         }
         if adjust.removeDrawers && item.removableWeightKG > 0 {
-            notes.append("Drawers and shelves out: " + WIFMeasure.weightText(item.removableWeightKG)
+            notes.append("Drawers and shelves out: " + TCMeasure.weightText(item.removableWeightKG)
                          + " lighter. Size is unchanged — this only makes the carry easier.")
         }
         if adjust.liftDoorOffHinges {
@@ -429,7 +429,7 @@ enum WIFEngine {
             notes.append("Tilting is off: the object stays on its feet and may only be turned on the spot.")
         }
 
-        return WIFCheckResult(stages: stages,
+        return TCCheckResult(stages: stages,
                               tightestStageID: tightest?.id,
                               verdict: overall,
                               effectiveWidth: size.w,
@@ -441,10 +441,10 @@ enum WIFEngine {
 
     // MARK: One stage
 
-    static func stage(for obstacle: WIFObstacle,
+    static func stage(for obstacle: TCObstacle,
                       size: (w: Double, h: Double, d: Double),
-                      adjust: WIFAdjustments,
-                      unit: WIFUnit) -> WIFStageOutcome {
+                      adjust: TCAdjustments,
+                      unit: TCUnit) -> TCStageOutcome {
         switch obstacle.kind {
         case .opening:
             return openingStage(obstacle, size, adjust, unit)
@@ -457,31 +457,31 @@ enum WIFEngine {
 
     // MARK: Opening
 
-    private static func openingWidth(_ obstacle: WIFObstacle, _ adjust: WIFAdjustments) -> Double {
+    private static func openingWidth(_ obstacle: TCObstacle, _ adjust: TCAdjustments) -> Double {
         obstacle.openWidthMM + (adjust.liftDoorOffHinges ? max(0, obstacle.hingeGainMM) : 0)
     }
 
-    private static func openingAttempt(poses: [WIFOpeningPose],
+    private static func openingAttempt(poses: [TCOpeningPose],
                                        width: Double,
                                        height: Double,
-                                       rotate: Bool) -> WIFAttempt {
-        var best = WIFAttempt.impossible
+                                       rotate: Bool) -> TCAttempt {
+        var best = TCAttempt.impossible
         for pose in poses {
-            let fit = WIFGeom.rectInRect(across: pose.across,
+            let fit = TCGeom.rectInRect(across: pose.across,
                                          up: pose.up,
                                          width: width,
                                          height: height,
                                          rotate: rotate)
             let slack = min(fit.slackWidth, fit.slackHeight)
             if slack > best.slack {
-                let plan = WIFOpeningPlan(openWidth: width,
+                let plan = TCOpeningPlan(openWidth: width,
                                           openHeight: height,
                                           sideAcross: pose.across,
                                           sideUp: pose.up,
                                           angleDeg: fit.angle,
                                           slackWidth: fit.slackWidth,
                                           slackHeight: fit.slackHeight)
-                best = WIFAttempt(slack: slack,
+                best = TCAttempt(slack: slack,
                                   angle: fit.angle,
                                   binding: fit.slackWidth <= fit.slackHeight ? "opening width" : "opening height",
                                   pose: pose.label,
@@ -491,14 +491,14 @@ enum WIFEngine {
         return best
     }
 
-    private static func openingStage(_ obstacle: WIFObstacle,
+    private static func openingStage(_ obstacle: TCObstacle,
                                      _ size: (w: Double, h: Double, d: Double),
-                                     _ adjust: WIFAdjustments,
-                                     _ unit: WIFUnit) -> WIFStageOutcome {
+                                     _ adjust: TCAdjustments,
+                                     _ unit: TCUnit) -> TCStageOutcome {
         let width = openingWidth(obstacle, adjust)
         let height = obstacle.openHeightMM
-        let upright = WIFPoses.uprightOpening(w: size.w, h: size.h, d: size.d)
-        let all = WIFPoses.allOpening(w: size.w, h: size.h, d: size.d)
+        let upright = TCPoses.uprightOpening(w: size.w, h: size.h, d: size.d)
+        let all = TCPoses.allOpening(w: size.w, h: size.h, d: size.d)
 
         let natural = openingAttempt(poses: [upright[0]], width: width, height: height, rotate: false)
         let yawed = openingAttempt(poses: upright, width: width, height: height, rotate: false)
@@ -509,37 +509,37 @@ enum WIFEngine {
         let (verdict, chosen) = classify(natural: natural, yawed: yawed, free: free)
 
         var notes: [String] = []
-        notes.append("Opening " + WIFMeasure.pair(width, height, unit)
+        notes.append("Opening " + TCMeasure.pair(width, height, unit)
                      + (adjust.liftDoorOffHinges && obstacle.hingeGainMM > 0
-                        ? " (leaf off, +" + WIFMeasure.label(obstacle.hingeGainMM, unit) + ")" : ""))
+                        ? " (leaf off, +" + TCMeasure.label(obstacle.hingeGainMM, unit) + ")" : ""))
         notes.append("Best carry: " + chosen.pose
                      + (chosen.angle > 0.01 && chosen.angle < 89.99
-                        ? ", leaned over " + WIFMeasure.angleText(chosen.angle) : ", square on"))
+                        ? ", leaned over " + TCMeasure.angleText(chosen.angle) : ", square on"))
         if case .opening(let plan) = chosen.drawing {
-            notes.append("Needs " + WIFMeasure.label(plan.openWidth - plan.slackWidth, unit)
-                         + " across and " + WIFMeasure.label(plan.openHeight - plan.slackHeight, unit)
+            notes.append("Needs " + TCMeasure.label(plan.openWidth - plan.slackWidth, unit)
+                         + " across and " + TCMeasure.label(plan.openHeight - plan.slackHeight, unit)
                          + " up.")
         }
         if verdict == .blocked {
             notes.append("Tightest point: " + chosen.binding + ", over by "
-                         + WIFMeasure.label(abs(chosen.slack), unit) + ".")
+                         + TCMeasure.label(abs(chosen.slack), unit) + ".")
         }
 
         let headline: String
         switch verdict {
         case .clear:
             headline = "Goes straight through with "
-                + WIFMeasure.label(chosen.slack, unit) + " to spare."
+                + TCMeasure.label(chosen.slack, unit) + " to spare."
         case .rotated:
             headline = "Only fits " + chosen.pose + ". Spare room: "
-                + WIFMeasure.label(chosen.slack, unit) + "."
+                + TCMeasure.label(chosen.slack, unit) + "."
         case .blocked:
             headline = "Too big for this opening by "
-                + WIFMeasure.label(abs(chosen.slack), unit) + " on the "
+                + TCMeasure.label(abs(chosen.slack), unit) + " on the "
                 + chosen.binding.replacingOccurrences(of: "opening ", with: "") + "."
         }
 
-        return WIFStageOutcome(id: obstacle.id,
+        return TCStageOutcome(id: obstacle.id,
                                name: obstacle.name,
                                kind: obstacle.kind,
                                verdict: verdict,
@@ -554,36 +554,36 @@ enum WIFEngine {
 
     // MARK: Turn and stairwell
 
-    private static func turnAttempt(poses: [WIFCarryPose],
-                                    obstacle: WIFObstacle,
-                                    unit: WIFUnit) -> WIFAttempt {
-        var best = WIFAttempt.impossible
+    private static func turnAttempt(poses: [TCCarryPose],
+                                    obstacle: TCObstacle,
+                                    unit: TCUnit) -> TCAttempt {
+        var best = TCAttempt.impossible
         let headroom = max(0, obstacle.headroomMM)
         for pose in poses {
             let headSlack = headroom > 0 ? headroom - pose.vertical : Double.greatestFiniteMagnitude
-            let turn = WIFGeom.turnClearance(length: pose.length,
+            let turn = TCGeom.turnClearance(length: pose.length,
                                              width: pose.width,
                                              corridorA: obstacle.corridorAMM,
                                              corridorB: obstacle.corridorBMM)
             let slack = min(headSlack, turn.clearance)
             if slack > best.slack {
-                let plan = WIFTurnPlan(corridorA: obstacle.corridorAMM,
+                let plan = TCTurnPlan(corridorA: obstacle.corridorAMM,
                                        corridorB: obstacle.corridorBMM,
                                        length: pose.length,
                                        width: pose.width,
                                        angleDeg: turn.angle,
                                        clearanceMM: turn.clearance)
                 var extra: [String] = []
-                if let limit = WIFGeom.longestThroughTurn(width: pose.width,
+                if let limit = TCGeom.longestThroughTurn(width: pose.width,
                                                           corridorA: obstacle.corridorAMM,
                                                           corridorB: obstacle.corridorBMM) {
-                    extra.append("At " + WIFMeasure.label(pose.width, unit)
+                    extra.append("At " + TCMeasure.label(pose.width, unit)
                                  + " across, the longest object this corner takes is "
-                                 + WIFMeasure.label(limit.length, unit) + ".")
+                                 + TCMeasure.label(limit.length, unit) + ".")
                 } else {
                     extra.append("The object is wider than one of the corridors, so no length fits.")
                 }
-                best = WIFAttempt(slack: slack,
+                best = TCAttempt(slack: slack,
                                   angle: turn.angle,
                                   binding: headSlack < turn.clearance ? "headroom" : "inner corner",
                                   pose: pose.label,
@@ -594,12 +594,12 @@ enum WIFEngine {
         return best
     }
 
-    private static func turnStage(_ obstacle: WIFObstacle,
+    private static func turnStage(_ obstacle: TCObstacle,
                                   _ size: (w: Double, h: Double, d: Double),
-                                  _ adjust: WIFAdjustments,
-                                  _ unit: WIFUnit) -> WIFStageOutcome {
-        let upright = WIFPoses.uprightCarry(w: size.w, h: size.h, d: size.d)
-        let all = WIFPoses.allCarry(w: size.w, h: size.h, d: size.d)
+                                  _ adjust: TCAdjustments,
+                                  _ unit: TCUnit) -> TCStageOutcome {
+        let upright = TCPoses.uprightCarry(w: size.w, h: size.h, d: size.d)
+        let all = TCPoses.allCarry(w: size.w, h: size.h, d: size.d)
 
         let natural = turnAttempt(poses: [upright[0]], obstacle: obstacle, unit: unit)
         let yawed = turnAttempt(poses: upright, obstacle: obstacle, unit: unit)
@@ -608,9 +608,9 @@ enum WIFEngine {
         let (verdict, chosen) = classify(natural: natural, yawed: yawed, free: free)
 
         var notes: [String] = []
-        notes.append("Corridors " + WIFMeasure.pair(obstacle.corridorAMM, obstacle.corridorBMM, unit)
+        notes.append("Corridors " + TCMeasure.pair(obstacle.corridorAMM, obstacle.corridorBMM, unit)
                      + (obstacle.headroomMM > 0
-                        ? ", headroom " + WIFMeasure.label(obstacle.headroomMM, unit) : ""))
+                        ? ", headroom " + TCMeasure.label(obstacle.headroomMM, unit) : ""))
         notes.append("Best carry: " + chosen.pose + ".")
         if chosen.binding == "inner corner" {
             if chosen.angle <= 0.26 {
@@ -620,7 +620,7 @@ enum WIFEngine {
                 notes.append("The tightest moment is after the turn — the object is as wide as the "
                              + "second corridor allows.")
             } else {
-                notes.append("Worst angle: " + WIFMeasure.angleText(chosen.angle)
+                notes.append("Worst angle: " + TCMeasure.angleText(chosen.angle)
                              + " into the turn. That is the moment the corner bites.")
             }
         } else {
@@ -631,20 +631,20 @@ enum WIFEngine {
         let headline: String
         switch verdict {
         case .clear:
-            headline = "Turns the corner with " + WIFMeasure.label(chosen.slack, unit)
+            headline = "Turns the corner with " + TCMeasure.label(chosen.slack, unit)
                 + " to spare at its worst angle."
         case .rotated:
             headline = "Turns only " + chosen.pose + " — "
-                + WIFMeasure.label(chosen.slack, unit) + " to spare at the worst angle."
+                + TCMeasure.label(chosen.slack, unit) + " to spare at the worst angle."
         case .blocked:
             headline = chosen.binding == "headroom"
-                ? "Too tall for the headroom by " + WIFMeasure.label(abs(chosen.slack), unit) + "."
+                ? "Too tall for the headroom by " + TCMeasure.label(abs(chosen.slack), unit) + "."
                 : "Jams at the inner corner: it overlaps by "
-                    + WIFMeasure.label(abs(chosen.slack), unit) + " at "
-                    + WIFMeasure.angleText(chosen.angle) + "."
+                    + TCMeasure.label(abs(chosen.slack), unit) + " at "
+                    + TCMeasure.angleText(chosen.angle) + "."
         }
 
-        return WIFStageOutcome(id: obstacle.id,
+        return TCStageOutcome(id: obstacle.id,
                                name: obstacle.name,
                                kind: obstacle.kind,
                                verdict: verdict,
@@ -660,8 +660,8 @@ enum WIFEngine {
     // MARK: Lift
 
     private static func cabinAttempt(w: Double, h: Double, d: Double,
-                                     obstacle: WIFObstacle,
-                                     level: Int) -> WIFAttempt {
+                                     obstacle: TCObstacle,
+                                     level: Int) -> TCAttempt {
         // level 0 = square on the walls, 1 = free to turn on the spot, 2 = free to lean as well.
         if level == 0 {
             let heightSlack = obstacle.cabinHeightMM - h
@@ -671,17 +671,17 @@ enum WIFEngine {
             var binding = "cabin height"
             if acrossSlack <= heightSlack && acrossSlack <= depthSlack { binding = "cabin width" }
             else if depthSlack <= heightSlack { binding = "cabin depth" }
-            return WIFAttempt(slack: slack, angle: 0, binding: binding, pose: "standing square", drawing: nil)
+            return TCAttempt(slack: slack, angle: 0, binding: binding, pose: "standing square", drawing: nil)
         }
 
         if level == 1 {
             let heightSlack = obstacle.cabinHeightMM - h
-            let floor = WIFGeom.floorSlack(footprint: w,
+            let floor = TCGeom.floorSlack(footprint: w,
                                            wide: d,
                                            width: obstacle.cabinWidthMM,
                                            depth: obstacle.cabinDepthMM)
             let slack = min(heightSlack, floor.slack)
-            return WIFAttempt(slack: slack,
+            return TCAttempt(slack: slack,
                               angle: floor.angle,
                               binding: heightSlack <= floor.slack ? "cabin height" : "cabin floor",
                               pose: floor.angle > 0.01 && floor.angle < 89.99
@@ -689,7 +689,7 @@ enum WIFEngine {
                               drawing: nil)
         }
 
-        var best = WIFAttempt.impossible
+        var best = TCAttempt.impossible
         let axes: [(Double, Double, Double, String)] = [
             (h, d, w, "leaned back on its own height"),
             (h, w, d, "leaned sideways on its own height"),
@@ -699,7 +699,7 @@ enum WIFEngine {
             (d, w, h, "up on its back edge, turned")
         ]
         for axis in axes {
-            let lean = WIFGeom.leanInside(long: axis.0,
+            let lean = TCGeom.leanInside(long: axis.0,
                                           thick: axis.1,
                                           wide: axis.2,
                                           cabinWidth: obstacle.cabinWidthMM,
@@ -708,7 +708,7 @@ enum WIFEngine {
                                           allowTilt: true)
             if lean.slack > best.slack {
                 let pose = lean.angle < 0.26 ? "standing upright" : axis.3
-                best = WIFAttempt(slack: lean.slack,
+                best = TCAttempt(slack: lean.slack,
                                   angle: lean.angle,
                                   binding: lean.binding,
                                   pose: pose,
@@ -718,14 +718,14 @@ enum WIFEngine {
         return best
     }
 
-    private static func elevatorStage(_ obstacle: WIFObstacle,
+    private static func elevatorStage(_ obstacle: TCObstacle,
                                       _ size: (w: Double, h: Double, d: Double),
-                                      _ adjust: WIFAdjustments,
-                                      _ unit: WIFUnit) -> WIFStageOutcome {
+                                      _ adjust: TCAdjustments,
+                                      _ unit: TCUnit) -> TCStageOutcome {
         let doorWidth = openingWidth(obstacle, adjust)
         let doorHeight = obstacle.openHeightMM
-        let upright = WIFPoses.uprightOpening(w: size.w, h: size.h, d: size.d)
-        let all = WIFPoses.allOpening(w: size.w, h: size.h, d: size.d)
+        let upright = TCPoses.uprightOpening(w: size.w, h: size.h, d: size.d)
+        let all = TCPoses.allOpening(w: size.w, h: size.h, d: size.d)
 
         // The door and the cabin are independent: whatever pose gets the object through the
         // doorway, it can be turned again once it is inside. So each half takes its own best.
@@ -752,33 +752,33 @@ enum WIFEngine {
         let doorAttempt = [doorNatural, doorYawed, doorFree].first(where: { $0.slack >= 0 }) ?? doorFree
 
         var notes: [String] = []
-        notes.append("Door " + WIFMeasure.pair(doorWidth, doorHeight, unit) + ", cabin "
-                     + WIFMeasure.triple(obstacle.cabinWidthMM, obstacle.cabinDepthMM,
+        notes.append("Door " + TCMeasure.pair(doorWidth, doorHeight, unit) + ", cabin "
+                     + TCMeasure.triple(obstacle.cabinWidthMM, obstacle.cabinDepthMM,
                                          obstacle.cabinHeightMM, unit) + ".")
         notes.append("Through the door: " + doorAttempt.pose
                      + (doorAttempt.angle > 0.01 && doorAttempt.angle < 89.99
-                        ? ", leaned over " + WIFMeasure.angleText(doorAttempt.angle) : ", square on")
-                     + " — " + WIFMeasure.signedLabel(doorAttempt.slack, unit) + " to spare.")
+                        ? ", leaned over " + TCMeasure.angleText(doorAttempt.angle) : ", square on")
+                     + " — " + TCMeasure.signedLabel(doorAttempt.slack, unit) + " to spare.")
         let cabin = adjust.allowTilt ? cabinFree : cabinYawed
         notes.append("Inside the cabin: " + cabin.pose
                      + (cabin.angle > 0.26 && cabin.angle < 89.74
-                        ? " at " + WIFMeasure.angleText(cabin.angle) : "")
-                     + " — " + WIFMeasure.signedLabel(cabin.slack, unit) + " to spare.")
+                        ? " at " + TCMeasure.angleText(cabin.angle) : "")
+                     + " — " + TCMeasure.signedLabel(cabin.slack, unit) + " to spare.")
         notes.append("Tightest of the two: " + chosen.binding + ".")
 
         let headline: String
         switch verdict {
         case .clear:
-            headline = "Goes in and stands up with " + WIFMeasure.label(chosen.slack, unit) + " to spare."
+            headline = "Goes in and stands up with " + TCMeasure.label(chosen.slack, unit) + " to spare."
         case .rotated:
             headline = "Fits, but only " + chosen.pose + " — "
-                + WIFMeasure.label(chosen.slack, unit) + " to spare."
+                + TCMeasure.label(chosen.slack, unit) + " to spare."
         case .blocked:
             headline = "Will not fit: short of the " + chosen.binding + " by "
-                + WIFMeasure.label(abs(chosen.slack), unit) + "."
+                + TCMeasure.label(abs(chosen.slack), unit) + "."
         }
 
-        return WIFStageOutcome(id: obstacle.id,
+        return TCStageOutcome(id: obstacle.id,
                                name: obstacle.name,
                                kind: obstacle.kind,
                                verdict: verdict,
@@ -793,18 +793,18 @@ enum WIFEngine {
 
     // MARK: Shared helpers
 
-    private static func combine(_ door: WIFAttempt,
-                                _ cabin: WIFAttempt,
+    private static func combine(_ door: TCAttempt,
+                                _ cabin: TCAttempt,
                                 doorLabel: String,
-                                cabinLabel: String) -> WIFAttempt {
+                                cabinLabel: String) -> TCAttempt {
         if door.slack <= cabin.slack {
-            return WIFAttempt(slack: door.slack,
+            return TCAttempt(slack: door.slack,
                               angle: door.angle,
                               binding: door.binding,
                               pose: door.pose + " through the " + doorLabel,
                               drawing: door.drawing)
         }
-        return WIFAttempt(slack: cabin.slack,
+        return TCAttempt(slack: cabin.slack,
                           angle: cabin.angle,
                           binding: cabin.binding,
                           pose: cabin.pose + " in the " + cabinLabel,
@@ -813,9 +813,9 @@ enum WIFEngine {
 
     /// Three escalating levels of effort. The first that clears decides the verdict, so the app
     /// never tells someone to tilt a wardrobe that would have walked straight through.
-    private static func classify(natural: WIFAttempt,
-                                 yawed: WIFAttempt,
-                                 free: WIFAttempt) -> (WIFVerdict, WIFAttempt) {
+    private static func classify(natural: TCAttempt,
+                                 yawed: TCAttempt,
+                                 free: TCAttempt) -> (TCVerdict, TCAttempt) {
         if natural.slack >= 0 { return (.clear, natural) }
         if yawed.slack >= 0 { return (.rotated, yawed) }
         if free.slack >= 0 { return (.rotated, free) }

@@ -2,17 +2,17 @@ import SwiftUI
 
 /// The main screen: one object, one ordered route, a verdict for every stage and a clear mark on
 /// the stage that is tightest.
-struct WIFCheckView: View {
-    @EnvironmentObject private var store: WIFStore
+struct TCCheckView: View {
+    @EnvironmentObject private var store: TCStore
 
     var body: some View {
-        WIFScaffold(title: "Will It Fit",
+        TCScaffold(title: "Turnclear",
                     subtitle: "One object, one route, a verdict per stage") {
             itemPicker
             routePicker
             resultSection
             adjustmentsCard
-            WIFNoticeBox(text: "Clearances are worked out from the numbers you enter. "
+            TCNoticeBox(text: "Clearances are worked out from the numbers you enter. "
                          + "Measure the real opening between the frame linings, not the door leaf.")
         }
     }
@@ -21,16 +21,16 @@ struct WIFCheckView: View {
 
     private var itemPicker: some View {
         VStack(alignment: .leading, spacing: 7) {
-            WIFSectionLabel(text: "Object")
+            TCSectionLabel(text: "Object")
             if store.items.isEmpty {
-                WIFEmptyState(title: "No objects yet",
+                TCEmptyState(title: "No objects yet",
                               message: "Add the sofa, fridge or desk you are thinking of buying on the Items tab, then come back here.")
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
                         ForEach(store.items) { item in
-                            WIFChoiceChip(title: item.name,
-                                          detail: WIFMeasure.triple(item.widthMM, item.heightMM,
+                            TCChoiceChip(title: item.name,
+                                          detail: TCMeasure.triple(item.widthMM, item.heightMM,
                                                                     item.depthMM, store.unit),
                                           selected: store.selectedItem?.id == item.id) {
                                 store.selectItem(item.id)
@@ -45,15 +45,15 @@ struct WIFCheckView: View {
 
     private var routePicker: some View {
         VStack(alignment: .leading, spacing: 7) {
-            WIFSectionLabel(text: "Route")
+            TCSectionLabel(text: "Route")
             if store.routes.isEmpty {
-                WIFEmptyState(title: "No routes yet",
+                TCEmptyState(title: "No routes yet",
                               message: "A route is the ordered list of things the object has to get past: front door, hallway turn, lift, flat door. Build one on the Routes tab.")
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
                         ForEach(store.routes) { route in
-                            WIFChoiceChip(title: route.name,
+                            TCChoiceChip(title: route.name,
                                           detail: route.stops.count == 1
                                               ? "1 stage" : "\(route.stops.count) stages",
                                           selected: store.selectedRoute?.id == route.id) {
@@ -73,7 +73,7 @@ struct WIFCheckView: View {
     private var resultSection: some View {
         if let item = store.selectedItem, let route = store.selectedRoute {
             if route.stops.isEmpty {
-                WIFEmptyState(title: "This route has no stages",
+                TCEmptyState(title: "This route has no stages",
                               message: "Open the route on the Routes tab and add the doors, turns and lifts the object has to get past.")
             } else {
                 // Worked out once per pass and handed to both halves, rather than twice.
@@ -84,54 +84,54 @@ struct WIFCheckView: View {
         }
     }
 
-    private func resolved(item: WIFItem, route: WIFRoute, result: WIFCheckResult) -> some View {
+    private func resolved(item: TCItem, route: TCRoute, result: TCCheckResult) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             summaryCard(item: item, result: result)
             stageList(route: route, item: item, result: result)
         }
     }
 
-    private func summaryCard(item: WIFItem, result: WIFCheckResult) -> some View {
-        WIFCard(tint: WIFVerdictStyle.background(result.verdict),
-                border: WIFVerdictStyle.foreground(result.verdict).opacity(0.4)) {
+    private func summaryCard(item: TCItem, result: TCCheckResult) -> some View {
+        TCCard(tint: TCVerdictStyle.background(result.verdict),
+                border: TCVerdictStyle.foreground(result.verdict).opacity(0.4)) {
             HStack(alignment: .top, spacing: 10) {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(overallHeadline(result))
-                        .font(WIFType.display(19))
-                        .foregroundColor(WIFVerdictStyle.foreground(result.verdict))
+                        .font(TCType.display(19))
+                        .foregroundColor(TCVerdictStyle.foreground(result.verdict))
                         .fixedSize(horizontal: false, vertical: true)
                     Text(item.name)
-                        .font(WIFType.body(12))
-                        .foregroundColor(WIFPalette.slate)
+                        .font(TCType.body(12))
+                        .foregroundColor(TCPalette.slate)
                 }
                 Spacer(minLength: 6)
-                WIFVerdictChip(verdict: result.verdict, compact: true)
+                TCVerdictChip(verdict: result.verdict, compact: true)
             }
 
-            WIFHairline()
+            TCHairline()
 
-            WIFKeyValue(key: "Size used",
-                        value: WIFMeasure.triple(result.effectiveWidth, result.effectiveHeight,
+            TCKeyValue(key: "Size used",
+                        value: TCMeasure.triple(result.effectiveWidth, result.effectiveHeight,
                                                  result.effectiveDepth, store.unit))
             if result.effectiveWeight > 0 {
-                WIFKeyValue(key: "Weight to carry",
-                            value: WIFMeasure.weightText(result.effectiveWeight))
+                TCKeyValue(key: "Weight to carry",
+                            value: TCMeasure.weightText(result.effectiveWeight))
             }
             if let tight = result.tightestStage {
-                WIFKeyValue(key: "Tightest stage",
-                            value: tight.name + "  " + WIFMeasure.signedLabel(tight.marginMM, store.unit),
-                            valueColor: WIFVerdictStyle.foreground(tight.verdict))
+                TCKeyValue(key: "Tightest stage",
+                            value: tight.name + "  " + TCMeasure.signedLabel(tight.marginMM, store.unit),
+                            valueColor: TCVerdictStyle.foreground(tight.verdict))
             }
             ForEach(0..<result.adjustmentNotes.count, id: \.self) { index in
                 Text(result.adjustmentNotes[index])
-                    .font(WIFType.body(11))
-                    .foregroundColor(WIFPalette.slate)
+                    .font(TCType.body(11))
+                    .foregroundColor(TCPalette.slate)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
     }
 
-    private func overallHeadline(_ result: WIFCheckResult) -> String {
+    private func overallHeadline(_ result: TCCheckResult) -> String {
         switch result.verdict {
         case .clear: return "It goes in."
         case .rotated: return "It goes in, but it has to be turned."
@@ -139,12 +139,12 @@ struct WIFCheckView: View {
         }
     }
 
-    private func stageList(route: WIFRoute, item: WIFItem, result: WIFCheckResult) -> some View {
+    private func stageList(route: TCRoute, item: TCItem, result: TCCheckResult) -> some View {
         VStack(alignment: .leading, spacing: 7) {
-            WIFSectionLabel(text: "Stages in order")
+            TCSectionLabel(text: "Stages in order")
             VStack(spacing: 8) {
                 ForEach(Array(result.stages.enumerated()), id: \.element.id) { pair in
-                    NavigationLink(destination: WIFStageDetailView(outcome: pair.element,
+                    NavigationLink(destination: TCStageDetailView(outcome: pair.element,
                                                                    obstacle: obstacle(for: pair.element,
                                                                                       in: route),
                                                                    itemName: item.name,
@@ -160,40 +160,40 @@ struct WIFCheckView: View {
         }
     }
 
-    private func obstacle(for outcome: WIFStageOutcome, in route: WIFRoute) -> WIFObstacle {
+    private func obstacle(for outcome: TCStageOutcome, in route: TCRoute) -> TCObstacle {
         route.stops.first(where: { $0.id == outcome.id })
-            ?? WIFObstacle(name: outcome.name, kind: outcome.kind)
+            ?? TCObstacle(name: outcome.name, kind: outcome.kind)
     }
 
-    private func stageRow(index: Int, outcome: WIFStageOutcome, tightest: Bool) -> some View {
+    private func stageRow(index: Int, outcome: TCStageOutcome, tightest: Bool) -> some View {
         HStack(alignment: .top, spacing: 11) {
             VStack(spacing: 5) {
                 Text("\(index)")
-                    .font(WIFType.figure(12))
-                    .foregroundColor(WIFPalette.slate)
-                WIFKindIcon(kind: outcome.kind, size: 22, color: WIFPalette.ink)
+                    .font(TCType.figure(12))
+                    .foregroundColor(TCPalette.slate)
+                TCKindIcon(kind: outcome.kind, size: 22, color: TCPalette.ink)
             }
             .frame(width: 30)
 
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 7) {
                     Text(outcome.name)
-                        .font(WIFType.semibold(15))
-                        .foregroundColor(WIFPalette.ink)
+                        .font(TCType.semibold(15))
+                        .foregroundColor(TCPalette.ink)
                         .lineLimit(1)
                     if tightest {
                         Text("TIGHTEST")
-                            .font(WIFType.caption(9))
+                            .font(TCType.caption(9))
                             .tracking(0.8)
-                            .foregroundColor(WIFPalette.amberDeep)
+                            .foregroundColor(TCPalette.amberDeep)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
-                            .background(Capsule().fill(WIFPalette.amberSoft))
+                            .background(Capsule().fill(TCPalette.amberSoft))
                     }
                 }
                 Text(outcome.headline)
-                    .font(WIFType.body(12))
-                    .foregroundColor(WIFPalette.slate)
+                    .font(TCType.body(12))
+                    .foregroundColor(TCPalette.slate)
                     .fixedSize(horizontal: false, vertical: true)
                     .multilineTextAlignment(.leading)
             }
@@ -201,56 +201,56 @@ struct WIFCheckView: View {
             Spacer(minLength: 4)
 
             VStack(alignment: .trailing, spacing: 5) {
-                WIFVerdictChip(verdict: outcome.verdict, compact: true)
-                Text(WIFMeasure.signedLabel(outcome.marginMM, store.unit))
-                    .font(WIFType.figure(12))
-                    .foregroundColor(WIFVerdictStyle.foreground(outcome.verdict))
-                WIFIcon(glyph: WIFChevronGlyph(), size: 14, color: WIFPalette.slate, weight: 2)
+                TCVerdictChip(verdict: outcome.verdict, compact: true)
+                Text(TCMeasure.signedLabel(outcome.marginMM, store.unit))
+                    .font(TCType.figure(12))
+                    .foregroundColor(TCVerdictStyle.foreground(outcome.verdict))
+                TCIcon(glyph: TCChevronGlyph(), size: 14, color: TCPalette.slate, weight: 2)
                     .rotationEffect(.degrees(90))
             }
         }
-        .padding(WIFMetric.cardPadding)
+        .padding(TCMetric.cardPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: WIFMetric.corner).fill(WIFPalette.panel))
-        .overlay(RoundedRectangle(cornerRadius: WIFMetric.corner)
-                    .stroke(tightest ? WIFPalette.amber : WIFPalette.line,
+        .background(RoundedRectangle(cornerRadius: TCMetric.corner).fill(TCPalette.panel))
+        .overlay(RoundedRectangle(cornerRadius: TCMetric.corner)
+                    .stroke(tightest ? TCPalette.amber : TCPalette.line,
                             lineWidth: tightest ? 2 : 1))
     }
 
     // MARK: Adjustments
 
     private var adjustmentsCard: some View {
-        WIFCard {
+        TCCard {
             Text("What if")
-                .font(WIFType.heading(16))
-                .foregroundColor(WIFPalette.ink)
+                .font(TCType.heading(16))
+                .foregroundColor(TCPalette.ink)
             Text("Each switch re-runs every stage straight away.")
-                .font(WIFType.body(11))
-                .foregroundColor(WIFPalette.slate)
+                .font(TCType.body(11))
+                .foregroundColor(TCPalette.slate)
 
-            WIFSwitchRow(title: "Take the legs off",
+            TCSwitchRow(title: "Take the legs off",
                          detail: "Uses the leg height saved with the object.",
                          isOn: binding(\.removeLegs))
-            WIFHairline()
-            WIFSwitchRow(title: "Lift door leaves off their hinges",
+            TCHairline()
+            TCSwitchRow(title: "Lift door leaves off their hinges",
                          detail: "Adds each opening's own hinge gain to its width.",
                          isOn: binding(\.liftDoorOffHinges))
-            WIFHairline()
-            WIFSwitchRow(title: "Unwrap the packaging",
+            TCHairline()
+            TCSwitchRow(title: "Unwrap the packaging",
                          detail: "Takes the packing thickness off every dimension.",
                          isOn: binding(\.removePackaging))
-            WIFHairline()
-            WIFSwitchRow(title: "Pull out drawers and shelves",
+            TCHairline()
+            TCSwitchRow(title: "Pull out drawers and shelves",
                          detail: "Weight only. The outside size does not change.",
                          isOn: binding(\.removeDrawers))
-            WIFHairline()
-            WIFSwitchRow(title: "Tilting allowed",
+            TCHairline()
+            TCSwitchRow(title: "Tilting allowed",
                          detail: "Off means the object stays on its feet and may only be turned on the spot.",
                          isOn: binding(\.allowTilt))
         }
     }
 
-    private func binding(_ path: WritableKeyPath<WIFAdjustments, Bool>) -> Binding<Bool> {
+    private func binding(_ path: WritableKeyPath<TCAdjustments, Bool>) -> Binding<Bool> {
         Binding(get: { store.adjustments[keyPath: path] },
                 set: { newValue in
                     var next = store.adjustments

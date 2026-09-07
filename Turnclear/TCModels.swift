@@ -3,7 +3,7 @@ import Foundation
 // MARK: - Item
 
 /// A rigid object the user wants to move. All dimensions in millimetres.
-struct WIFItem: Identifiable, Codable, Equatable {
+struct TCItem: Identifiable, Codable, Equatable {
     var id: UUID
     var name: String
     /// Side to side, as the object normally stands.
@@ -67,7 +67,7 @@ struct WIFItem: Identifiable, Codable, Equatable {
 
 // MARK: - Obstacle
 
-enum WIFObstacleKind: String, Codable, CaseIterable {
+enum TCObstacleKind: String, Codable, CaseIterable {
     case opening
     case turn
     case stair
@@ -107,10 +107,10 @@ enum WIFObstacleKind: String, Codable, CaseIterable {
 
 /// One stage of a route. Every kind keeps its own set of fields; the unused ones simply stay
 /// at their defaults so an obstacle can be switched from one kind to another without loss.
-struct WIFObstacle: Identifiable, Codable, Equatable {
+struct TCObstacle: Identifiable, Codable, Equatable {
     var id: UUID
     var name: String
-    var kind: WIFObstacleKind
+    var kind: TCObstacleKind
 
     // Opening (also the lift door).
     var openWidthMM: Double
@@ -132,7 +132,7 @@ struct WIFObstacle: Identifiable, Codable, Equatable {
 
     init(id: UUID = UUID(),
          name: String,
-         kind: WIFObstacleKind,
+         kind: TCObstacleKind,
          openWidthMM: Double = 800,
          openHeightMM: Double = 2000,
          hingeGainMM: Double = 35,
@@ -160,7 +160,7 @@ struct WIFObstacle: Identifiable, Codable, Equatable {
         let box = try decoder.container(keyedBy: CodingKeys.self)
         id = (try? box.decodeIfPresent(UUID.self, forKey: .id)) ?? UUID()
         name = (try? box.decodeIfPresent(String.self, forKey: .name)) ?? "Stage"
-        kind = (try? box.decodeIfPresent(WIFObstacleKind.self, forKey: .kind)) ?? .opening
+        kind = (try? box.decodeIfPresent(TCObstacleKind.self, forKey: .kind)) ?? .opening
         openWidthMM = (try? box.decodeIfPresent(Double.self, forKey: .openWidthMM)) ?? 800
         openHeightMM = (try? box.decodeIfPresent(Double.self, forKey: .openHeightMM)) ?? 2000
         hingeGainMM = (try? box.decodeIfPresent(Double.self, forKey: .hingeGainMM)) ?? 35
@@ -173,20 +173,20 @@ struct WIFObstacle: Identifiable, Codable, Equatable {
     }
 
     /// One-line summary of the numbers that actually matter for this kind.
-    func summary(_ unit: WIFUnit) -> String {
+    func summary(_ unit: TCUnit) -> String {
         switch kind {
         case .opening:
-            return "Opening " + WIFMeasure.pair(openWidthMM, openHeightMM, unit)
+            return "Opening " + TCMeasure.pair(openWidthMM, openHeightMM, unit)
         case .turn:
-            let base = "Corridors " + WIFMeasure.pair(corridorAMM, corridorBMM, unit)
-            return headroomMM > 0 ? base + ", headroom " + WIFMeasure.label(headroomMM, unit) : base
+            let base = "Corridors " + TCMeasure.pair(corridorAMM, corridorBMM, unit)
+            return headroomMM > 0 ? base + ", headroom " + TCMeasure.label(headroomMM, unit) : base
         case .stair:
-            return "Flight " + WIFMeasure.text(corridorAMM, unit)
-                + ", landing " + WIFMeasure.text(corridorBMM, unit)
-                + ", headroom " + WIFMeasure.label(headroomMM, unit)
+            return "Flight " + TCMeasure.text(corridorAMM, unit)
+                + ", landing " + TCMeasure.text(corridorBMM, unit)
+                + ", headroom " + TCMeasure.label(headroomMM, unit)
         case .elevator:
-            return "Cabin " + WIFMeasure.triple(cabinWidthMM, cabinDepthMM, cabinHeightMM, unit)
-                + ", door " + WIFMeasure.pair(openWidthMM, openHeightMM, unit)
+            return "Cabin " + TCMeasure.triple(cabinWidthMM, cabinDepthMM, cabinHeightMM, unit)
+                + ", door " + TCMeasure.pair(openWidthMM, openHeightMM, unit)
         }
     }
 }
@@ -195,12 +195,12 @@ struct WIFObstacle: Identifiable, Codable, Equatable {
 
 /// An ordered list of obstacles — the whole point of the app. A single doorway verdict is a
 /// calculator; a route is the answer to "will it get into my flat".
-struct WIFRoute: Identifiable, Codable, Equatable {
+struct TCRoute: Identifiable, Codable, Equatable {
     var id: UUID
     var name: String
-    var stops: [WIFObstacle]
+    var stops: [TCObstacle]
 
-    init(id: UUID = UUID(), name: String, stops: [WIFObstacle]) {
+    init(id: UUID = UUID(), name: String, stops: [TCObstacle]) {
         self.id = id
         self.name = name
         self.stops = stops
@@ -210,14 +210,14 @@ struct WIFRoute: Identifiable, Codable, Equatable {
         let box = try decoder.container(keyedBy: CodingKeys.self)
         id = (try? box.decodeIfPresent(UUID.self, forKey: .id)) ?? UUID()
         name = (try? box.decodeIfPresent(String.self, forKey: .name)) ?? "Route"
-        stops = (try? box.decodeIfPresent([WIFObstacle].self, forKey: .stops)) ?? []
+        stops = (try? box.decodeIfPresent([TCObstacle].self, forKey: .stops)) ?? []
     }
 }
 
 // MARK: - Adjustments
 
 /// The live "what if" panel. Every flag re-runs the geometry, none of them edits the saved item.
-struct WIFAdjustments: Codable, Equatable {
+struct TCAdjustments: Codable, Equatable {
     var removeLegs: Bool
     var liftDoorOffHinges: Bool
     var removePackaging: Bool
@@ -245,5 +245,5 @@ struct WIFAdjustments: Codable, Equatable {
         allowTilt = (try? box.decodeIfPresent(Bool.self, forKey: .allowTilt)) ?? true
     }
 
-    static let untouched = WIFAdjustments()
+    static let untouched = TCAdjustments()
 }

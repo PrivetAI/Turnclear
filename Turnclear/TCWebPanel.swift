@@ -6,7 +6,7 @@ import WebKit
 /// The frame is what guards the top edge: the caller ignores only the bottom safe area, so the
 /// panel can never draw under the clock. `.always` is what keeps scrollable content clear of the
 /// home indicator once the frame does extend past the bottom.
-struct WIFWebPanel: UIViewRepresentable {
+struct TCWebPanel: UIViewRepresentable {
     let address: String
     /// Called once, as soon as the page starts rendering, so the caller can lift its splash.
     var onFirstPaint: (() -> Void)? = nil

@@ -1,18 +1,18 @@
 import SwiftUI
 
-private enum WIFStageField: Hashable {
+private enum TCStageField: Hashable {
     case name, openWidth, openHeight, hinge, corridorA, corridorB, headroom, cabinW, cabinD, cabinH
 }
 
-struct WIFObstacleEditorView: View {
-    let existing: WIFObstacle?
-    let unit: WIFUnit
-    let onSave: (WIFObstacle) -> Void
+struct TCObstacleEditorView: View {
+    let existing: TCObstacle?
+    let unit: TCUnit
+    let onSave: (TCObstacle) -> Void
 
     @Environment(\.presentationMode) private var presentationMode
-    @FocusState private var focus: WIFStageField?
+    @FocusState private var focus: TCStageField?
 
-    @State private var kind: WIFObstacleKind
+    @State private var kind: TCObstacleKind
     @State private var name: String
     @State private var openWidth: String
     @State private var openHeight: String
@@ -25,51 +25,51 @@ struct WIFObstacleEditorView: View {
     @State private var cabinH: String
     @State private var problem: String?
 
-    init(existing: WIFObstacle?, unit: WIFUnit, onSave: @escaping (WIFObstacle) -> Void) {
+    init(existing: TCObstacle?, unit: TCUnit, onSave: @escaping (TCObstacle) -> Void) {
         self.existing = existing
         self.unit = unit
         self.onSave = onSave
-        let base = existing ?? WIFObstacle(name: "", kind: .opening)
+        let base = existing ?? TCObstacle(name: "", kind: .opening)
         _kind = State(initialValue: base.kind)
         _name = State(initialValue: existing?.name ?? "")
-        _openWidth = State(initialValue: WIFMeasure.text(base.openWidthMM, unit))
-        _openHeight = State(initialValue: WIFMeasure.text(base.openHeightMM, unit))
-        _hinge = State(initialValue: WIFMeasure.text(base.hingeGainMM, unit))
-        _corridorA = State(initialValue: WIFMeasure.text(base.corridorAMM, unit))
-        _corridorB = State(initialValue: WIFMeasure.text(base.corridorBMM, unit))
-        _headroom = State(initialValue: WIFMeasure.text(base.headroomMM, unit))
-        _cabinW = State(initialValue: WIFMeasure.text(base.cabinWidthMM, unit))
-        _cabinD = State(initialValue: WIFMeasure.text(base.cabinDepthMM, unit))
-        _cabinH = State(initialValue: WIFMeasure.text(base.cabinHeightMM, unit))
+        _openWidth = State(initialValue: TCMeasure.text(base.openWidthMM, unit))
+        _openHeight = State(initialValue: TCMeasure.text(base.openHeightMM, unit))
+        _hinge = State(initialValue: TCMeasure.text(base.hingeGainMM, unit))
+        _corridorA = State(initialValue: TCMeasure.text(base.corridorAMM, unit))
+        _corridorB = State(initialValue: TCMeasure.text(base.corridorBMM, unit))
+        _headroom = State(initialValue: TCMeasure.text(base.headroomMM, unit))
+        _cabinW = State(initialValue: TCMeasure.text(base.cabinWidthMM, unit))
+        _cabinD = State(initialValue: TCMeasure.text(base.cabinDepthMM, unit))
+        _cabinH = State(initialValue: TCMeasure.text(base.cabinHeightMM, unit))
     }
 
     var body: some View {
-        WIFScaffold(title: existing == nil ? "New stage" : "Edit stage",
+        TCScaffold(title: existing == nil ? "New stage" : "Edit stage",
                     subtitle: kind.blurb,
                     showsBack: true) {
             kindPicker
             presetRow
-            WIFCard {
-                WIFTextField(title: "Stage name", text: $name, field: WIFStageField.name, focus: $focus)
+            TCCard {
+                TCTextField(title: "Stage name", text: $name, field: TCStageField.name, focus: $focus)
             }
             measurementCard
 
             if let problem = problem {
                 Text(problem)
-                    .font(WIFType.semibold(13))
-                    .foregroundColor(WIFPalette.rust)
+                    .font(TCType.semibold(13))
+                    .foregroundColor(TCPalette.rust)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            WIFPrimaryButton(title: existing == nil ? "Add this stage" : "Save stage") { save() }
+            TCPrimaryButton(title: existing == nil ? "Add this stage" : "Save stage") { save() }
         }
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
                 Button(action: { focus = nil }) {
                     Text("Done")
-                        .font(WIFType.semibold(15))
-                        .foregroundColor(WIFPalette.ink)
+                        .font(TCType.semibold(15))
+                        .foregroundColor(TCPalette.ink)
                 }
             }
         }
@@ -77,11 +77,11 @@ struct WIFObstacleEditorView: View {
 
     private var kindPicker: some View {
         VStack(alignment: .leading, spacing: 7) {
-            WIFSectionLabel(text: "What kind of stage")
+            TCSectionLabel(text: "What kind of stage")
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
-                    ForEach(WIFObstacleKind.allCases, id: \.self) { option in
-                        WIFChoiceChip(title: option.title,
+                    ForEach(TCObstacleKind.allCases, id: \.self) { option in
+                        TCChoiceChip(title: option.title,
                                       detail: nil,
                                       selected: kind == option) {
                             kind = option
@@ -96,11 +96,11 @@ struct WIFObstacleEditorView: View {
 
     private var presetRow: some View {
         VStack(alignment: .leading, spacing: 7) {
-            WIFSectionLabel(text: "Start from a typical size")
+            TCSectionLabel(text: "Start from a typical size")
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
-                    ForEach(WIFPresetLibrary.presets(in: presetGroup)) { preset in
-                        WIFChoiceChip(title: preset.title,
+                    ForEach(TCPresetLibrary.presets(in: presetGroup)) { preset in
+                        TCChoiceChip(title: preset.title,
                                       detail: preset.detail,
                                       selected: false) {
                             apply(preset)
@@ -109,14 +109,14 @@ struct WIFObstacleEditorView: View {
                 }
                 .padding(.vertical, 2)
             }
-            Text(WIFPresetLibrary.disclaimer)
-                .font(WIFType.body(11))
-                .foregroundColor(WIFPalette.slate)
+            Text(TCPresetLibrary.disclaimer)
+                .font(TCType.body(11))
+                .foregroundColor(TCPalette.slate)
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
 
-    private var presetGroup: WIFPresetGroup {
+    private var presetGroup: TCPresetGroup {
         switch kind {
         case .opening: return .doors
         case .turn: return .turns
@@ -129,119 +129,119 @@ struct WIFObstacleEditorView: View {
     private var measurementCard: some View {
         switch kind {
         case .opening:
-            WIFCard {
+            TCCard {
                 Text("The clear opening")
-                    .font(WIFType.heading(15))
-                    .foregroundColor(WIFPalette.ink)
-                WIFDimensionField(title: "Clear width",
+                    .font(TCType.heading(15))
+                    .foregroundColor(TCPalette.ink)
+                TCDimensionField(title: "Clear width",
                                   hint: "Lining to lining, with the door open.",
                                   text: $openWidth, unitLabel: unit.shortLabel,
-                                  field: WIFStageField.openWidth, focus: $focus)
-                WIFDimensionField(title: "Clear height",
+                                  field: TCStageField.openWidth, focus: $focus)
+                TCDimensionField(title: "Clear height",
                                   hint: "Floor to the underside of the head.",
                                   text: $openHeight, unitLabel: unit.shortLabel,
-                                  field: WIFStageField.openHeight, focus: $focus)
-                WIFDimensionField(title: "Gain with the leaf off",
+                                  field: TCStageField.openHeight, focus: $focus)
+                TCDimensionField(title: "Gain with the leaf off",
                                   hint: "How much wider it gets with the door lifted off its hinges. Usually 3 to 4 cm.",
                                   text: $hinge, unitLabel: unit.shortLabel,
-                                  field: WIFStageField.hinge, focus: $focus)
+                                  field: TCStageField.hinge, focus: $focus)
             }
         case .turn:
-            WIFCard {
+            TCCard {
                 Text("The two corridors")
-                    .font(WIFType.heading(15))
-                    .foregroundColor(WIFPalette.ink)
-                WIFDimensionField(title: "Corridor coming in",
+                    .font(TCType.heading(15))
+                    .foregroundColor(TCPalette.ink)
+                TCDimensionField(title: "Corridor coming in",
                                   hint: "Wall to wall, where the object arrives.",
                                   text: $corridorA, unitLabel: unit.shortLabel,
-                                  field: WIFStageField.corridorA, focus: $focus)
-                WIFDimensionField(title: "Corridor going out",
+                                  field: TCStageField.corridorA, focus: $focus)
+                TCDimensionField(title: "Corridor going out",
                                   hint: "Wall to wall, after the turn.",
                                   text: $corridorB, unitLabel: unit.shortLabel,
-                                  field: WIFStageField.corridorB, focus: $focus)
-                WIFDimensionField(title: "Headroom",
+                                  field: TCStageField.corridorB, focus: $focus)
+                TCDimensionField(title: "Headroom",
                                   hint: "Leave at 0 if the ceiling is not a problem here.",
                                   text: $headroom, unitLabel: unit.shortLabel,
-                                  field: WIFStageField.headroom, focus: $focus)
+                                  field: TCStageField.headroom, focus: $focus)
             }
         case .stair:
-            WIFCard {
+            TCCard {
                 Text("The landing")
-                    .font(WIFType.heading(15))
-                    .foregroundColor(WIFPalette.ink)
-                WIFDimensionField(title: "Flight width",
+                    .font(TCType.heading(15))
+                    .foregroundColor(TCPalette.ink)
+                TCDimensionField(title: "Flight width",
                                   hint: "Wall to handrail on the flight itself.",
                                   text: $corridorA, unitLabel: unit.shortLabel,
-                                  field: WIFStageField.corridorA, focus: $focus)
-                WIFDimensionField(title: "Landing depth",
+                                  field: TCStageField.corridorA, focus: $focus)
+                TCDimensionField(title: "Landing depth",
                                   hint: "How far the landing runs before the next flight.",
                                   text: $corridorB, unitLabel: unit.shortLabel,
-                                  field: WIFStageField.corridorB, focus: $focus)
-                WIFDimensionField(title: "Headroom",
+                                  field: TCStageField.corridorB, focus: $focus)
+                TCDimensionField(title: "Headroom",
                                   hint: "Landing to the underside of the flight above.",
                                   text: $headroom, unitLabel: unit.shortLabel,
-                                  field: WIFStageField.headroom, focus: $focus)
+                                  field: TCStageField.headroom, focus: $focus)
             }
         case .elevator:
-            WIFCard {
+            TCCard {
                 Text("The door")
-                    .font(WIFType.heading(15))
-                    .foregroundColor(WIFPalette.ink)
-                WIFDimensionField(title: "Door width", hint: nil,
+                    .font(TCType.heading(15))
+                    .foregroundColor(TCPalette.ink)
+                TCDimensionField(title: "Door width", hint: nil,
                                   text: $openWidth, unitLabel: unit.shortLabel,
-                                  field: WIFStageField.openWidth, focus: $focus)
-                WIFDimensionField(title: "Door height", hint: nil,
+                                  field: TCStageField.openWidth, focus: $focus)
+                TCDimensionField(title: "Door height", hint: nil,
                                   text: $openHeight, unitLabel: unit.shortLabel,
-                                  field: WIFStageField.openHeight, focus: $focus)
+                                  field: TCStageField.openHeight, focus: $focus)
             }
-            WIFCard {
+            TCCard {
                 Text("The cabin")
-                    .font(WIFType.heading(15))
-                    .foregroundColor(WIFPalette.ink)
-                WIFDimensionField(title: "Cabin width", hint: nil,
+                    .font(TCType.heading(15))
+                    .foregroundColor(TCPalette.ink)
+                TCDimensionField(title: "Cabin width", hint: nil,
                                   text: $cabinW, unitLabel: unit.shortLabel,
-                                  field: WIFStageField.cabinW, focus: $focus)
-                WIFDimensionField(title: "Cabin depth", hint: nil,
+                                  field: TCStageField.cabinW, focus: $focus)
+                TCDimensionField(title: "Cabin depth", hint: nil,
                                   text: $cabinD, unitLabel: unit.shortLabel,
-                                  field: WIFStageField.cabinD, focus: $focus)
-                WIFDimensionField(title: "Cabin height",
+                                  field: TCStageField.cabinD, focus: $focus)
+                TCDimensionField(title: "Cabin height",
                                   hint: "Floor to ceiling inside the cabin.",
                                   text: $cabinH, unitLabel: unit.shortLabel,
-                                  field: WIFStageField.cabinH, focus: $focus)
+                                  field: TCStageField.cabinH, focus: $focus)
             }
         }
     }
 
     // MARK: Actions
 
-    private func apply(_ preset: WIFPreset) {
+    private func apply(_ preset: TCPreset) {
         let built = preset.build()
         kind = built.kind
         if name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             name = built.name
         }
-        openWidth = WIFMeasure.text(built.openWidthMM, unit)
-        openHeight = WIFMeasure.text(built.openHeightMM, unit)
-        hinge = WIFMeasure.text(built.hingeGainMM, unit)
-        corridorA = WIFMeasure.text(built.corridorAMM, unit)
-        corridorB = WIFMeasure.text(built.corridorBMM, unit)
-        headroom = WIFMeasure.text(built.headroomMM, unit)
-        cabinW = WIFMeasure.text(built.cabinWidthMM, unit)
-        cabinD = WIFMeasure.text(built.cabinDepthMM, unit)
-        cabinH = WIFMeasure.text(built.cabinHeightMM, unit)
+        openWidth = TCMeasure.text(built.openWidthMM, unit)
+        openHeight = TCMeasure.text(built.openHeightMM, unit)
+        hinge = TCMeasure.text(built.hingeGainMM, unit)
+        corridorA = TCMeasure.text(built.corridorAMM, unit)
+        corridorB = TCMeasure.text(built.corridorBMM, unit)
+        headroom = TCMeasure.text(built.headroomMM, unit)
+        cabinW = TCMeasure.text(built.cabinWidthMM, unit)
+        cabinD = TCMeasure.text(built.cabinDepthMM, unit)
+        cabinH = TCMeasure.text(built.cabinHeightMM, unit)
         focus = nil
     }
 
     private func save() {
-        var stage = existing ?? WIFObstacle(name: "", kind: kind)
+        var stage = existing ?? TCObstacle(name: "", kind: kind)
         stage.kind = kind
 
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         stage.name = trimmed.isEmpty ? kind.title : trimmed
 
         func value(_ raw: String) -> Double? {
-            guard let parsed = WIFMeasure.parse(raw), parsed > 0 else { return nil }
-            return WIFMeasure.toMillimetres(parsed, unit)
+            guard let parsed = TCMeasure.parse(raw), parsed > 0 else { return nil }
+            return TCMeasure.toMillimetres(parsed, unit)
         }
 
         switch kind {
@@ -252,7 +252,7 @@ struct WIFObstacleEditorView: View {
             }
             stage.openWidthMM = w
             stage.openHeightMM = h
-            stage.hingeGainMM = WIFMeasure.toMillimetres(max(0, WIFMeasure.parse(hinge) ?? 0), unit)
+            stage.hingeGainMM = TCMeasure.toMillimetres(max(0, TCMeasure.parse(hinge) ?? 0), unit)
             if kind == .elevator {
                 guard let cw = value(cabinW), let cd = value(cabinD), let ch = value(cabinH) else {
                     problem = "The cabin needs a width, a depth and a height greater than zero."
@@ -270,8 +270,8 @@ struct WIFObstacleEditorView: View {
             }
             stage.corridorAMM = a
             stage.corridorBMM = b
-            let head = max(0, WIFMeasure.parse(headroom) ?? 0)
-            stage.headroomMM = head > 0 ? WIFMeasure.toMillimetres(head, unit) : 0
+            let head = max(0, TCMeasure.parse(headroom) ?? 0)
+            stage.headroomMM = head > 0 ? TCMeasure.toMillimetres(head, unit) : 0
             if kind == .stair && stage.headroomMM <= 0 {
                 problem = "A stairwell needs a headroom figure — that is what makes it different from a plain turn."
                 return

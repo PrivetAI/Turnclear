@@ -2,9 +2,9 @@ import SwiftUI
 
 // MARK: - Plan view of a turn
 
-struct WIFTurnDiagram: View {
-    let plan: WIFTurnPlan
-    let unit: WIFUnit
+struct TCTurnDiagram: View {
+    let plan: TCTurnPlan
+    let unit: TCUnit
     let side: CGFloat
 
     var body: some View {
@@ -12,8 +12,8 @@ struct WIFTurnDiagram: View {
             draw(in: context)
         }
         .frame(width: side, height: side)
-        .background(RoundedRectangle(cornerRadius: 12).fill(WIFPalette.panel))
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(WIFPalette.line, lineWidth: 1))
+        .background(RoundedRectangle(cornerRadius: 12).fill(TCPalette.panel))
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(TCPalette.line, lineWidth: 1))
     }
 
     private func draw(in context: GraphicsContext) {
@@ -61,31 +61,31 @@ struct WIFTurnDiagram: View {
         floor.addLine(to: point(CGPoint(x: b, y: far)))
         floor.addLine(to: point(CGPoint(x: 0, y: far)))
         floor.closeSubpath()
-        context.fill(floor, with: .color(WIFPalette.wash))
+        context.fill(floor, with: .color(TCPalette.wash))
 
         var outer = Path()
         outer.move(to: point(CGPoint(x: 0, y: far)))
         outer.addLine(to: point(CGPoint(x: 0, y: 0)))
         outer.addLine(to: point(CGPoint(x: far, y: 0)))
-        context.stroke(outer, with: .color(WIFPalette.ink),
+        context.stroke(outer, with: .color(TCPalette.ink),
                        style: StrokeStyle(lineWidth: 2.4, lineCap: .square))
 
         var inner = Path()
         inner.move(to: point(CGPoint(x: far, y: a)))
         inner.addLine(to: point(innerCorner))
         inner.addLine(to: point(CGPoint(x: b, y: far)))
-        context.stroke(inner, with: .color(WIFPalette.ink),
+        context.stroke(inner, with: .color(TCPalette.ink),
                        style: StrokeStyle(lineWidth: 2.4, lineCap: .square))
 
         var box = Path()
         box.move(to: point(corners[0]))
         for corner in corners.dropFirst() { box.addLine(to: point(corner)) }
         box.closeSubpath()
-        context.fill(box, with: .color(WIFPalette.amber.opacity(0.55)))
-        context.stroke(box, with: .color(WIFPalette.amberDeep),
+        context.fill(box, with: .color(TCPalette.amber.opacity(0.55)))
+        context.stroke(box, with: .color(TCPalette.amberDeep),
                        style: StrokeStyle(lineWidth: 2, lineJoin: .round))
 
-        let clearanceColour = plan.clearanceMM < 0 ? WIFPalette.rust : WIFPalette.teal
+        let clearanceColour = plan.clearanceMM < 0 ? TCPalette.rust : TCPalette.teal
         let foot = CGPoint(x: innerCorner.x - plan.clearanceMM * normal.x,
                            y: innerCorner.y - plan.clearanceMM * normal.y)
         var gap = Path()
@@ -103,24 +103,24 @@ struct WIFTurnDiagram: View {
         marker.addLine(to: CGPoint(x: markerCentre.x - markerSize, y: markerCentre.y))
         marker.closeSubpath()
         context.fill(marker, with: .color(clearanceColour))
-        context.stroke(marker, with: .color(WIFPalette.panel), style: StrokeStyle(lineWidth: 1.5))
+        context.stroke(marker, with: .color(TCPalette.panel), style: StrokeStyle(lineWidth: 1.5))
 
-        context.draw(Text(WIFMeasure.label(a, unit))
-                        .font(WIFType.caption(10))
-                        .foregroundColor(WIFPalette.slate),
+        context.draw(Text(TCMeasure.label(a, unit))
+                        .font(TCType.caption(10))
+                        .foregroundColor(TCPalette.slate),
                      at: CGPoint(x: side - margin - 4, y: point(CGPoint(x: 0, y: a / 2)).y),
                      anchor: .trailing)
-        context.draw(Text(WIFMeasure.label(b, unit))
-                        .font(WIFType.caption(10))
-                        .foregroundColor(WIFPalette.slate),
+        context.draw(Text(TCMeasure.label(b, unit))
+                        .font(TCType.caption(10))
+                        .foregroundColor(TCPalette.slate),
                      at: CGPoint(x: point(CGPoint(x: b / 2, y: 0)).x, y: margin + 4),
                      anchor: .top)
 
         let anchorPoint = point(CGPoint(x: (corners[0].x + corners[2].x) / 2,
                                         y: (corners[0].y + corners[2].y) / 2))
-        context.draw(Text(WIFMeasure.angleText(plan.angleDeg))
-                        .font(WIFType.caption(11))
-                        .foregroundColor(WIFPalette.ink),
+        context.draw(Text(TCMeasure.angleText(plan.angleDeg))
+                        .font(TCType.caption(11))
+                        .foregroundColor(TCPalette.ink),
                      at: CGPoint(x: min(max(anchorPoint.x, margin + 26), side - margin - 26),
                                  y: min(max(anchorPoint.y, margin + 12), side - margin - 12)),
                      anchor: .center)
@@ -129,9 +129,9 @@ struct WIFTurnDiagram: View {
 
 // MARK: - Head-on view of an opening
 
-struct WIFOpeningDiagram: View {
-    let plan: WIFOpeningPlan
-    let unit: WIFUnit
+struct TCOpeningDiagram: View {
+    let plan: TCOpeningPlan
+    let unit: TCUnit
     let side: CGFloat
 
     private var boardHeight: CGFloat { side * 0.82 }
@@ -141,8 +141,8 @@ struct WIFOpeningDiagram: View {
             draw(in: context)
         }
         .frame(width: side, height: boardHeight)
-        .background(RoundedRectangle(cornerRadius: 12).fill(WIFPalette.panel))
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(WIFPalette.line, lineWidth: 1))
+        .background(RoundedRectangle(cornerRadius: 12).fill(TCPalette.panel))
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(TCPalette.line, lineWidth: 1))
     }
 
     private func draw(in context: GraphicsContext) {
@@ -171,8 +171,8 @@ struct WIFOpeningDiagram: View {
         let openingRect = centredRect(plan.openWidth, plan.openHeight)
         var surround = Path(CGRect(x: 0, y: 0, width: side, height: boardH))
         surround.addPath(openingRect)
-        context.fill(surround, with: .color(WIFPalette.wash), style: FillStyle(eoFill: true))
-        context.stroke(openingRect, with: .color(WIFPalette.ink), style: StrokeStyle(lineWidth: 2.6))
+        context.fill(surround, with: .color(TCPalette.wash), style: FillStyle(eoFill: true))
+        context.stroke(openingRect, with: .color(TCPalette.ink), style: StrokeStyle(lineWidth: 2.6))
 
         let halfAcross = CGFloat(plan.sideAcross) * scale / 2
         let halfUp = CGFloat(plan.sideUp) * scale / 2
@@ -186,12 +186,12 @@ struct WIFOpeningDiagram: View {
         object.move(to: turned[0])
         for p in turned.dropFirst() { object.addLine(to: p) }
         object.closeSubpath()
-        context.fill(object, with: .color(WIFPalette.amber.opacity(0.55)))
-        context.stroke(object, with: .color(WIFPalette.amberDeep),
+        context.fill(object, with: .color(TCPalette.amber.opacity(0.55)))
+        context.stroke(object, with: .color(TCPalette.amberDeep),
                        style: StrokeStyle(lineWidth: 2, lineJoin: .round))
 
         let tightOnWidth = plan.slackWidth <= plan.slackHeight
-        let needColour = min(plan.slackWidth, plan.slackHeight) < 0 ? WIFPalette.rust : WIFPalette.teal
+        let needColour = min(plan.slackWidth, plan.slackHeight) < 0 ? TCPalette.rust : TCPalette.teal
         let needed = centredRect(needWidth, needHeight)
         context.stroke(needed, with: .color(needColour), style: StrokeStyle(lineWidth: 1.6, dash: [5, 4]))
 
@@ -207,22 +207,22 @@ struct WIFOpeningDiagram: View {
         marker.closeSubpath()
         context.fill(marker, with: .color(needColour))
 
-        context.draw(Text(WIFMeasure.label(plan.openWidth, unit))
-                        .font(WIFType.caption(10))
-                        .foregroundColor(WIFPalette.slate),
+        context.draw(Text(TCMeasure.label(plan.openWidth, unit))
+                        .font(TCType.caption(10))
+                        .foregroundColor(TCPalette.slate),
                      at: CGPoint(x: centre.x,
                                  y: max(9, centre.y - CGFloat(plan.openHeight) * scale / 2 - 9)),
                      anchor: .center)
-        context.draw(Text(WIFMeasure.label(plan.openHeight, unit))
-                        .font(WIFType.caption(10))
-                        .foregroundColor(WIFPalette.slate),
+        context.draw(Text(TCMeasure.label(plan.openHeight, unit))
+                        .font(TCType.caption(10))
+                        .foregroundColor(TCPalette.slate),
                      at: CGPoint(x: max(26, centre.x - CGFloat(plan.openWidth) * scale / 2 - 6),
                                  y: centre.y),
                      anchor: .trailing)
         if plan.angleDeg > 0.01 && plan.angleDeg < 89.99 {
-            context.draw(Text(WIFMeasure.angleText(plan.angleDeg))
-                            .font(WIFType.caption(11))
-                            .foregroundColor(WIFPalette.ink),
+            context.draw(Text(TCMeasure.angleText(plan.angleDeg))
+                            .font(TCType.caption(11))
+                            .foregroundColor(TCPalette.ink),
                          at: CGPoint(x: centre.x, y: boardH - 11),
                          anchor: .center)
         }
@@ -231,7 +231,7 @@ struct WIFOpeningDiagram: View {
 
 // MARK: - Legend
 
-struct WIFLegendEntry: Identifiable {
+struct TCLegendEntry: Identifiable {
     let colour: Color
     let text: String
     // Stable across redraws: a fresh UUID each pass would make SwiftUI rebuild the whole legend
@@ -239,8 +239,8 @@ struct WIFLegendEntry: Identifiable {
     var id: String { text }
 }
 
-struct WIFDiagramLegend: View {
-    let entries: [WIFLegendEntry]
+struct TCDiagramLegend: View {
+    let entries: [TCLegendEntry]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
@@ -250,8 +250,8 @@ struct WIFDiagramLegend: View {
                         .fill(entry.colour)
                         .frame(width: 14, height: 4)
                     Text(entry.text)
-                        .font(WIFType.body(11))
-                        .foregroundColor(WIFPalette.slate)
+                        .font(TCType.body(11))
+                        .foregroundColor(TCPalette.slate)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
