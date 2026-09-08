@@ -107,8 +107,13 @@ enum TCGeom {
 
     /// How much spare room a `across` x `up` rectangle has inside an opening `width` x `height`.
     /// With `rotate` the rectangle is allowed to lean over inside the opening, which is what lets
-    /// a panel taller than the door go through on the diagonal; the sweep therefore also covers
-    /// the plain swapped orientation at 90 degrees.
+    /// a panel taller than the door go through on the diagonal.
+    ///
+    /// The sweep deliberately stops just short of 90 degrees. A full quarter turn is the same
+    /// thing as presenting the swapped face square on, and every swapped face is already in the
+    /// pose list under its own name — so sampling 90 here only ever produced a duplicate answer
+    /// carrying the wrong label ("upright, side first" for an object that is actually lying on
+    /// its side, reported as "square on" because the angle row hides 90).
     static func rectInRect(across: Double,
                            up: Double,
                            width: Double,
@@ -138,7 +143,7 @@ enum TCGeom {
         }
 
         var step = 0
-        while step <= sweepSteps {
+        while step < sweepSteps {
             consider(Double(step) * sweepStepDeg)
             step += 1
         }

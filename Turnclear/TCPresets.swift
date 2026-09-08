@@ -91,7 +91,7 @@ enum TCPresetLibrary {
         TCPreset(id: "lift-large", title: "Large passenger lift",
                   detail: "Cabin 160 x 140 x 220 cm, door 110 x 210 cm", group: .lifts) {
             TCObstacle(name: "Lift", kind: .elevator,
-                        openWidthMM: 1600, openHeightMM: 2100, hingeGainMM: 0,
+                        openWidthMM: 1100, openHeightMM: 2100, hingeGainMM: 0,
                         cabinWidthMM: 1600, cabinDepthMM: 1400, cabinHeightMM: 2200)
         },
         TCPreset(id: "lift-goods", title: "Goods lift",
